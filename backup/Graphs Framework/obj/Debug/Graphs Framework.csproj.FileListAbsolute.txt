@@ -1,0 +1,21 @@
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\bin\Debug\Graphs Framework.exe.config
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\bin\Debug\Graphs Framework.exe
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\bin\Debug\Graphs Framework.pdb
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs Framework.csproj.AssemblyReference.cache
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs_Framework.Form1.resources
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs_Framework.Properties.Resources.resources
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs Framework.csproj.GenerateResource.cache
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs Framework.csproj.CoreCompileInputs.cache
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs Framework.exe
+C:\Users\leven\source\repos\Graphs Framework\Graphs Framework\obj\Debug\Graphs Framework.pdb
+H:\Graphs Framework backup\Graphs Framework\bin\Debug\Graphs Framework.exe.config
+H:\Graphs Framework backup\Graphs Framework\bin\Debug\Graphs Framework.exe
+H:\Graphs Framework backup\Graphs Framework\bin\Debug\Graphs Framework.pdb
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs Framework.csproj.AssemblyReference.cache
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs Framework.csproj.SuggestedBindingRedirects.cache
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs_Framework.Form1.resources
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs_Framework.Properties.Resources.resources
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs Framework.csproj.GenerateResource.cache
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs Framework.csproj.CoreCompileInputs.cache
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs Framework.exe
+H:\Graphs Framework backup\Graphs Framework\obj\Debug\Graphs Framework.pdb
