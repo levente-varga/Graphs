@@ -27,7 +27,9 @@ namespace Graphs_Framework
 
         List<Double2> points;
         List<Double2> scaledPoints;
-        Double2 mouse;
+        Double2 mousePos;
+        bool mouseDown;
+        double scale = 1;
 
         Stopwatch time = new Stopwatch();
         double lastElapsedTime = 0;
@@ -37,12 +39,13 @@ namespace Graphs_Framework
         bool showDegree = false;
         bool sortChart = false;
         bool showNodes = true;
-        bool showChartValues = false;
+        bool showChartValues = true;
         bool forceDirectedArrangement = false;
         bool showChart = true;
 
         bool graphHovered = false;
         int selectedNodeID = -1;
+        Double2 selectedNodeOrigin;
 
         Color yellow = Color.FromArgb(255, 189, 0);
         Color blue = Color.FromArgb(0, 120, 215);
@@ -102,6 +105,14 @@ namespace Graphs_Framework
             Double2 p1 = new Double2(5, 4);
             Double2 p2 = new Double2(0, 0);
             lMaxF.Text = p1.Normalize().DistanceFrom(new Double2(0, 0)).ToString();
+
+            bShowDegree.BackColor = getToggleButtonColor(showDegree);
+            bShowNodes.BackColor = getToggleButtonColor(showNodes);
+            bGradient.BackColor = getToggleButtonColor(gradientGraph);
+            bSort.BackColor = getToggleButtonColor(sortChart);
+            bStretch.BackColor = getToggleButtonColor(stretchChart);
+            bShowValues.BackColor = getToggleButtonColor(showChartValues);
+            bArrangement.BackColor = getToggleButtonColor(forceDirectedArrangement);
         }
 
         private void SetupGraphics()
@@ -253,28 +264,26 @@ namespace Graphs_Framework
             if (gm.Graph == null) return;
             if (gm.Graph.NeighbourMatrix == null) return;
 
+            int radius = Math.Min(bmGraph.Width, bmGraph.Height) / 2 - 22;
+            points = gm.GenerateCircularArrangement(radius, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
+
             if (forceDirectedArrangement)
             {
                 gm.ResetForceDirectedArrangement();
                 timer.Enabled = true;
                 timer.Start();
             }
-            else
-            {
-                int radius = Math.Min(bmGraph.Width, bmGraph.Height) / 2 - 22;
-                points = gm.GenerateCircularArrangement(radius, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
-            }
         }
 
-        private int GetGraphPadding() => forceDirectedArrangement ? NODE_SIZE / 2 : 22;
+        private int GetGraphPadding() => forceDirectedArrangement || !showDegree ? NODE_SIZE / 2 : 22;
 
-        private void FitToCanvas(List<Double2> ps, int padding = 0, bool skipZeroNodes = false)
+        private void FitToCanvas(List<Double2> ps, int padding = 0, bool skipLonelyNodes = false)
         {
             if (ps == null) return;
 
             int skip = 0;
 
-            if (skipZeroNodes)
+            if (skipLonelyNodes)
             {
                 while (skip < ps.Count && gm.Graph.CalculateDegree(skip) == 0)
                 {
@@ -288,14 +297,16 @@ namespace Graphs_Framework
 
             for (int i = skip; i < ps.Count; i++)
             {
-                if (skipZeroNodes && gm.Graph.CalculateDegree(i) == 0) continue;
+                if (skipLonelyNodes && gm.Graph.CalculateDegree(i) == 0) continue;
                 if (ps[i].X < min.X) min.X = ps[i].X;
                 if (ps[i].Y < min.Y) min.Y = ps[i].Y;
                 if (ps[i].X > max.X) max.X = ps[i].X;
                 if (ps[i].Y > max.Y) max.Y = ps[i].Y;
             }
 
-            double scale = Math.Max((max.X - min.X) / (bmGraph.Width - padding * 2 - 1), (max.Y - min.Y) / (bmGraph.Height - padding * 2 - 1));
+            scale = Math.Max(
+                (max.X - min.X) / (bmGraph.Width  - padding * 2 - 1), 
+                (max.Y - min.Y) / (bmGraph.Height - padding * 2 - 1));
 
             for (int i = 0; i < ps.Count; i++)
             {
@@ -305,7 +316,7 @@ namespace Graphs_Framework
             }
         }
 
-        public void DrawGraph()
+        public void DrawGraph(bool scale = true)
         {
             if (gm.Graph == null) return;
             if (gm.Graph.NeighbourMatrix == null) return;
@@ -315,14 +326,16 @@ namespace Graphs_Framework
             SolidBrush selectionBrush = new SolidBrush(selectionColor);
             Pen pen = new Pen(mainColor);
 
-            scaledPoints = new List<Double2>(points);
-
             graphDrawerGraphics.Clear(background);
 
             int radius = Math.Min(bmGraph.Width, bmGraph.Height) / 2 - 22;
             
-            FitToCanvas(scaledPoints, GetGraphPadding(), forceDirectedArrangement);
-
+            if (scale)
+            {
+                scaledPoints = new List<Double2>(points);
+                FitToCanvas(scaledPoints, GetGraphPadding(), forceDirectedArrangement);
+            }
+            
             // Text
             if (showDegree && !forceDirectedArrangement)
             {
@@ -330,7 +343,9 @@ namespace Graphs_Framework
                 FitToCanvas(textPositions, 7, forceDirectedArrangement);
                 for (int i = 0; i < gm.Graph.NodeCount; i++)
                 {
-                    graphDrawerGraphics.DrawString(gm.Graph.CalculateDegree(i).ToString(), font, brush, (int)textPositions[i].X - (gm.Graph.CalculateDegree(i) < 10 ? 5 : 9), (int)textPositions[i].Y - 8);
+                    graphDrawerGraphics.DrawString(gm.Graph.CalculateDegree(i).ToString(), font, brush, 
+                        (int)textPositions[i].X - (gm.Graph.CalculateDegree(i) < 10 ? 5 : 9), 
+                        (int)textPositions[i].Y - 8);
                 }
             }
 
@@ -607,45 +622,52 @@ namespace Graphs_Framework
         private void bStretch_Click(object sender, EventArgs e)
         {
             stretchChart = !stretchChart;
-            if (stretchChart)
-                bStretch.BackColor = blue;
-            else
-                bStretch.BackColor = background;
-
+            bStretch.BackColor = getToggleButtonColor(stretchChart);
             DrawChart();
         }
 
         private void bGradient_Click(object sender, EventArgs e)
         {
             gradientGraph = !gradientGraph;
-            if (gradientGraph)
-                bGradient.BackColor = blue;
-            else
-                bGradient.BackColor = background;
-
+            bGradient.BackColor = getToggleButtonColor(gradientGraph);
             DrawGraph();
         }
 
         private void bShowDegree_Click(object sender, EventArgs e)
         {
             showDegree = !showDegree;
-            if (showDegree)
-                bShowDegree.BackColor = blue;
-            else
-                bShowDegree.BackColor = background;
-
+            bShowDegree.BackColor = getToggleButtonColor(showDegree);
             DrawGraph();
         }
 
-        private void bOrder_Click(object sender, EventArgs e)
+        private void bSort_Click(object sender, EventArgs e)
         {
             sortChart = !sortChart;
-            if (sortChart)
-                bSort.BackColor = blue;
-            else
-                bSort.BackColor = background;
-
+            bSort.BackColor = getToggleButtonColor(sortChart);
             DrawChart();
+        }
+
+        private void bShowNodes_Click(object sender, EventArgs e)
+        {
+            showNodes = !showNodes;
+            bShowNodes.BackColor = getToggleButtonColor(showNodes);
+            DrawGraph();
+        }
+
+        private void bShowValues_Click(object sender, EventArgs e)
+        {
+            showChartValues = !showChartValues;
+            bShowValues.BackColor = getToggleButtonColor(showChartValues);
+            DrawChart();
+        }
+
+        private void bArrangement_Click(object sender, EventArgs e)
+        {
+            forceDirectedArrangement = !forceDirectedArrangement;
+            bArrangement.BackColor = getToggleButtonColor(forceDirectedArrangement);
+            timer.Enabled = forceDirectedArrangement;
+            ArrangePoints();
+            DrawGraph();
         }
 
         private void UpdateChartButtons()
@@ -714,15 +736,9 @@ namespace Graphs_Framework
             DrawChart();
         }
 
-        private void bShowNodes_Click(object sender, EventArgs e)
+        Color getToggleButtonColor(bool value)
         {
-            showNodes = !showNodes;
-            if (showNodes)
-                bShowNodes.BackColor = blue;
-            else
-                bShowNodes.BackColor = background;
-
-            DrawGraph();
+            return value ? blue : background;
         }
 
         private void Main_SizeChanged(object sender, EventArgs e)
@@ -758,31 +774,6 @@ namespace Graphs_Framework
             DrawUI();
         }
 
-        private void bShowValues_Click(object sender, EventArgs e)
-        {
-            showChartValues = !showChartValues;
-            if (showChartValues)
-                bShowValues.BackColor = blue;
-            else
-                bShowValues.BackColor = background;
-
-            DrawChart();
-        }
-
-        private void bArrangement_Click(object sender, EventArgs e)
-        {      
-            forceDirectedArrangement = !forceDirectedArrangement;
-            if (forceDirectedArrangement)
-                bArrangement.BackColor = blue;
-            else
-                bArrangement.BackColor = background;
-
-            timer.Enabled = forceDirectedArrangement;
-
-            ArrangePoints();
-            DrawGraph();
-        }
-
         private void panelGraph_Paint(object sender, PaintEventArgs e)
         {
 
@@ -791,24 +782,22 @@ namespace Graphs_Framework
         private void timer_Tick(object sender, EventArgs e) {
             if (!forceDirectedArrangement) return;
             if (gm.Graph == null) return;
+            if (mouseDown && selectedNodeID >= 0) return;
                 
             points = gm.AdvanceForceDirectedArrangement();
 
             if (graphHovered)
             {
-                selectedNodeID = GetSelectedNodeID(mouse);
+                selectedNodeID = GetSelectedNodeID(mousePos);
             }
 
-            Render();
-        }
-
-        private void Render() {
             DrawGraph();
         }
 
         private int GetSelectedNodeID(Double2 mouse)
         {
             if (scaledPoints == null || scaledPoints.Count == 0) return -1;
+            if (mouseDown) return selectedNodeID;
 
             double minDistance = scaledPoints[0].DistanceFrom(mouse);
             int id = 0;
@@ -823,7 +812,7 @@ namespace Graphs_Framework
                 }
             }   
 
-            if (minDistance > NODE_SIZE / 2.0) id = -1;
+            if (minDistance > NODE_SIZE) id = -1;
             
             return id;
         }
@@ -842,15 +831,40 @@ namespace Graphs_Framework
         private void panelGraph_MouseMove(object sender, MouseEventArgs e)
         {
             graphHovered = true;
-            mouse = e.Location;
+            mousePos = e.Location;
             selectedNodeID = GetSelectedNodeID(e.Location);
 
-            if (!forceDirectedArrangement) Render();
+            if (mouseDown && selectedNodeID >= 0)
+            {
+                scaledPoints[selectedNodeID] = mousePos;
+            }
+
+            if (!forceDirectedArrangement || mouseDown && selectedNodeID >= 0)
+            {
+                Debug.WriteLine($"force: {forceDirectedArrangement}, mouseDown: {mouseDown}, selected: {selectedNodeID >= 0}");
+                DrawGraph(false);
+            }
         }
 
         private void panelGraph_MouseDown(object sender, MouseEventArgs e)
         {
-            // TODO
+            mouseDown = true;
+            if (selectedNodeID >= 0)
+            {
+                selectedNodeOrigin = scaledPoints[selectedNodeID];
+                Debug.WriteLine($"Started dragging from {selectedNodeOrigin}");
+            }
+        }
+
+        private void panelGraph_MouseUp(object sender, MouseEventArgs e)
+        {
+            mouseDown = false;
+
+            if (selectedNodeID >= 0)
+            {
+                Debug.WriteLine($"Translate from {selectedNodeOrigin} to {scaledPoints[selectedNodeID]}");
+                gm.TranslateNode(selectedNodeID, (scaledPoints[selectedNodeID] - selectedNodeOrigin) * scale);
+            }
         }
     }
 }

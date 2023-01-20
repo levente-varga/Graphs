@@ -401,7 +401,7 @@ namespace Graphs_Framework
             this.bSort.TabIndex = 11;
             this.bSort.Text = "Grafikon rendezése";
             this.bSort.UseVisualStyleBackColor = false;
-            this.bSort.Click += new System.EventHandler(this.bOrder_Click);
+            this.bSort.Click += new System.EventHandler(this.bSort_Click);
             // 
             // label3
             // 
@@ -607,13 +607,14 @@ namespace Graphs_Framework
             this.panelGraph.MouseEnter += new System.EventHandler(this.panelGraph_MouseEnter);
             this.panelGraph.MouseLeave += new System.EventHandler(this.panelGraph_MouseLeave);
             this.panelGraph.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelGraph_MouseMove);
+            this.panelGraph.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelGraph_MouseUp);
             // 
             // lVersion
             // 
             this.lVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lVersion.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Bold);
             this.lVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.lVersion.Location = new System.Drawing.Point(633, 703);
+            this.lVersion.Location = new System.Drawing.Point(636, 703);
             this.lVersion.Name = "lVersion";
             this.lVersion.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
             this.lVersion.Size = new System.Drawing.Size(86, 17);

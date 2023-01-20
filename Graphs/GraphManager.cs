@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -121,13 +122,14 @@ namespace Graphs_Framework
             GenerateCircularArrangement(1);
         }
 
-        public List<Double2> AdvanceForceDirectedArrangement() 
+        public List<Double2> AdvanceForceDirectedArrangement() => AdvanceForceDirectedArrangement(new List<int> {});
+        public List<Double2> AdvanceForceDirectedArrangement(int fixedPoint) => AdvanceForceDirectedArrangement(new List<int> { fixedPoint });
+        public List<Double2> AdvanceForceDirectedArrangement(List<int> fixedPoints) 
         {
             if (graph == null) return new List<Double2>();
 
             double maxF = 0;
             double coolingFactor = 1;
-            List<Double2> positions = points;
             List<Double2> forces = new List<Double2>();
 
             for (int i = 0; i < graph.NodeCount; i++) forces.Add(new Double2());
@@ -137,10 +139,9 @@ namespace Graphs_Framework
                 for (int other = 0; other < graph.NodeCount; other++) 
                 {
                     if (node == other) continue;
-                    //Debug.WriteLine(graph.ToString());
-                    Double2 towardsOther = positions[node].DirectionTowards(positions[other]);
-                    Double2 awayFromOther = positions[other].DirectionTowards(positions[node]);
-                    double distance = positions[node].DistanceFrom(positions[other]);
+                    Double2 towardsOther = points[node].DirectionTowards(points[other]);
+                    Double2 awayFromOther = points[other].DirectionTowards(points[node]);
+                    double distance = points[node].DistanceFrom(points[other]);
 
                     // Repulsive force
                     Double2 repulsive = IDEAL_SPRING_LENGTH / Math.Pow(distance, 1.5) * awayFromOther;
@@ -164,12 +165,19 @@ namespace Graphs_Framework
             // Applying force to nodes
             for (int i = 0; i < graph.NodeCount; i++) 
             {
-                positions[i] += cooling * forces[i];
+                if (fixedPoints.Contains(i)) continue;
+                points[i] += cooling * forces[i];
             }
 
             cooling *= coolingFactor;
             arrangementStep++;
             return points;
+        }
+
+
+        public void TranslateNode(int i, Double2 t)
+        {
+            points[i] += t;
         }
     }
 }
