@@ -35,7 +35,7 @@ namespace Graphs_Framework
         double lastElapsedTime = 0;
 
         bool stretchChart = false;
-        bool gradientGraph = false;
+        bool gradient = false;
         bool showDegree = false;
         bool sortChart = false;
         bool showNodes = true;
@@ -108,7 +108,7 @@ namespace Graphs_Framework
 
             bShowDegree.BackColor = getToggleButtonColor(showDegree);
             bShowNodes.BackColor = getToggleButtonColor(showNodes);
-            bGradient.BackColor = getToggleButtonColor(gradientGraph);
+            bGradient.BackColor = getToggleButtonColor(gradient);
             bSort.BackColor = getToggleButtonColor(sortChart);
             bStretch.BackColor = getToggleButtonColor(stretchChart);
             bShowValues.BackColor = getToggleButtonColor(showChartValues);
@@ -325,6 +325,7 @@ namespace Graphs_Framework
             SolidBrush brush = new SolidBrush(mainColor);
             SolidBrush selectionBrush = new SolidBrush(selectionColor);
             Pen pen = new Pen(mainColor);
+            Pen sPen = new Pen(selectionColor);
 
             graphDrawerGraphics.Clear(background);
 
@@ -363,25 +364,26 @@ namespace Graphs_Framework
                             int posX2 = (int)scaledPoints[j].X;
                             int posY2 = (int)scaledPoints[j].Y;
 
-                            if (gradientGraph)
-                            {
-                                LinearGradientBrush gradBrush = new LinearGradientBrush(
-                                    new Point(posX1 + (posX2 > posX1 ? -1 : 1), posY1 + (posY2 > posY1 ? -1 : 1)),
-                                    new Point(posX2 + (posX2 > posX1 ? 1 : -1), posY2 + (posY2 > posY1 ? 1 : -1)),
-                                    Color.FromArgb((int)(255.0 * Math.Pow((double)gm.Graph.CalculateDegree(i) / gm.Graph.MaxDegree, 2.5)), pen.Color.R, pen.Color.G, pen.Color.B),
-                                    Color.FromArgb((int)(255.0 * Math.Pow((double)gm.Graph.CalculateDegree(j) / gm.Graph.MaxDegree, 2.5)), pen.Color.R, pen.Color.G, pen.Color.B)
-                                    );
-                                Pen gradPen = new Pen(gradBrush);
+                            LinearGradientBrush gradBrush = new LinearGradientBrush(
+                                new Point(posX1 + (posX2 > posX1 ? -1 :  1), posY1 + (posY2 > posY1 ? -1 :  1)),
+                                new Point(posX2 + (posX2 > posX1 ?  1 : -1), posY2 + (posY2 > posY1 ?  1 : -1)),
+                                Color.FromArgb(
+                                    gradient ? (int)(255.0 * Math.Pow((double)gm.Graph.CalculateDegree(i) / gm.Graph.MaxDegree, 2.5)) : 255, 
+                                    i == selectedNodeID ? sPen.Color.R : pen.Color.R,
+                                    i == selectedNodeID ? sPen.Color.G : pen.Color.G,
+                                    i == selectedNodeID ? sPen.Color.B : pen.Color.B),
+                                Color.FromArgb(
+                                    gradient ? (int)(255.0 * Math.Pow((double)gm.Graph.CalculateDegree(j) / gm.Graph.MaxDegree, 2.5)) : 255, 
+                                    j == selectedNodeID ? sPen.Color.R : pen.Color.R, 
+                                    j == selectedNodeID ? sPen.Color.G : pen.Color.G, 
+                                    j == selectedNodeID ? sPen.Color.B : pen.Color.B)
+                                );
+                            Pen gradPen = new Pen(gradBrush);
 
-                                graphDrawerGraphics.DrawLine(gradPen, posX1, posY1, posX2, posY2);
+                            graphDrawerGraphics.DrawLine(gradPen, posX1, posY1, posX2, posY2);
 
-                                gradPen.Dispose();
-                                gradBrush.Dispose();
-                            }
-                            else
-                            {
-                                graphDrawerGraphics.DrawLine(pen, posX1, posY1, posX2, posY2);
-                            }
+                            gradPen.Dispose();
+                            gradBrush.Dispose();
                         }
                     }
                     catch
@@ -628,8 +630,8 @@ namespace Graphs_Framework
 
         private void bGradient_Click(object sender, EventArgs e)
         {
-            gradientGraph = !gradientGraph;
-            bGradient.BackColor = getToggleButtonColor(gradientGraph);
+            gradient = !gradient;
+            bGradient.BackColor = getToggleButtonColor(gradient);
             DrawGraph();
         }
 
