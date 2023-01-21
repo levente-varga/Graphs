@@ -11,12 +11,12 @@ namespace Graphs_Framework
 {
     public class GraphManager 
     {
-        private Graph lastGraph;
-        private Graph currentGraph;
         private const double IDEAL_SPRING_LENGTH = 10.0;
         double cooling = 1;
         int arrangementStep = 1;
-
+        
+        private Graph prevGeneratedGraph;
+        private Graph currGeneratedGraph;
         private Graph graph;
         public Graph Graph
         {
@@ -50,13 +50,13 @@ namespace Graphs_Framework
 
         public void GenerateGraph(Graph.Types type, int nodes, double probability, double power)
         {
-            lastGraph = currentGraph;
+            prevGeneratedGraph = currGeneratedGraph;
             graph = Graph.GenerateGraph(type, nodes, probability, power);
-            currentGraph = graph.Clone();
+            currGeneratedGraph = graph.Clone();
 
             if (GraphParametersChanged())
             {
-                // az átlagos fokszámeloszlást elölről kezdjük, mivel változotak a gráfgenerálás paraméterei
+                // start over counting the average degree distribution
                 averageDegreeDistribution = new List<double>(new double[graph.NodeCount]);
                 sampleCount = 0;
             }
@@ -64,13 +64,16 @@ namespace Graphs_Framework
             UpdateAverageDegreeDistribution();
         }
 
+        /*
+         * Compare the current and previous graph's generating parameters
+         */
         private bool GraphParametersChanged()
         {
-            if (lastGraph == null) return true;
-            return currentGraph.NodeCount != lastGraph.NodeCount
-                || currentGraph.Probability != lastGraph.Probability
-                || currentGraph.Power != lastGraph.Power
-                || currentGraph.Type != lastGraph.Type;
+            if (prevGeneratedGraph == null) return true;
+            return currGeneratedGraph.NodeCount != prevGeneratedGraph.NodeCount
+                || currGeneratedGraph.Probability != prevGeneratedGraph.Probability
+                || currGeneratedGraph.Power != prevGeneratedGraph.Power
+                || currGeneratedGraph.Type != prevGeneratedGraph.Type;
         }
 
         private void UpdateAverageDegreeDistribution()
@@ -90,8 +93,8 @@ namespace Graphs_Framework
 
 
 
-        public void ArrangeCircle(double radius) => ArrangeCircle(radius, 0);
-        public void ArrangeCircle(double radius, Double2 origo) 
+        public void ArrangeInCircle(double radius) => ArrangeInCircle(radius, 0);
+        public void ArrangeInCircle(double radius, Double2 origo) 
         {
             points = GetCircularArrangement(graph.NodeCount, radius, origo);
         }
@@ -122,7 +125,7 @@ namespace Graphs_Framework
         {
             arrangementStep = 1;
             cooling = 1;
-            ArrangeCircle(1);
+            ArrangeInCircle(1);
         }
 
         public void AdvanceForceDirectedArrangement() => AdvanceForceDirectedArrangement(new List<int> {});
@@ -182,12 +185,21 @@ namespace Graphs_Framework
             points[i] += t;
         }
 
-        public void DeleteNode(int i)
+        public void RemoveNode(int i)
         {
             points.RemoveAt(i);
-            graph.DeleteNode(i);
+            graph.RemoveNode(i);
+        }
 
-            Debug.WriteLine(graph);
+        public void RemoveEdge(int node1, int node2)
+        {
+            graph.RemoveEdge(node1, node2);
+        }
+
+        public void AddNode(Double2 at)
+        {
+            points.Add(at);
+            graph.AddNode();
         }
     }
 }

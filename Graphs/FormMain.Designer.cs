@@ -1,7 +1,7 @@
 ﻿
 namespace Graphs_Framework
 {
-    partial class Form1
+    partial class FormMain
     {
         /// <summary>
         /// Required designer variable.
@@ -614,7 +614,7 @@ namespace Graphs_Framework
             this.lVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lVersion.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Bold);
             this.lVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.lVersion.Location = new System.Drawing.Point(636, 703);
+            this.lVersion.Location = new System.Drawing.Point(633, 703);
             this.lVersion.Name = "lVersion";
             this.lVersion.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
             this.lVersion.Size = new System.Drawing.Size(86, 17);
@@ -625,7 +625,7 @@ namespace Graphs_Framework
             // 
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
-            // Form1
+            // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -633,7 +633,7 @@ namespace Graphs_Framework
             this.ClientSize = new System.Drawing.Size(1280, 720);
             this.Controls.Add(this.splitContainer1);
             this.MinimumSize = new System.Drawing.Size(606, 759);
-            this.Name = "Form1";
+            this.Name = "FormMain";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Graphs";

@@ -199,14 +199,25 @@ namespace Graphs_Framework
             return columns;
         }
 
-        private void AddEdge(int node1, int node2)
+        public void AddEdge(int node1, int node2)
         {
             if (node1 == node2) return;
             if (neighbourMatrix[node1][node2] || neighbourMatrix[node2][node1]) return;
 
             neighbourMatrix[node1][node2] = true;
             neighbourMatrix[node2][node1] = true;
+            maxDegree = CalculateMaxDegree();
             edgeCount++;
+        }
+
+        public void RemoveEdge(int node1, int node2)
+        {
+            if (node1 == node2) return;
+            if (!neighbourMatrix[node1][node2] && !neighbourMatrix[node2][node1]) return;
+
+            neighbourMatrix[node1][node2] = false;
+            neighbourMatrix[node2][node1] = false;
+            edgeCount--;
         }
 
         public bool HasEdge(int node1, int node2)
@@ -228,7 +239,17 @@ namespace Graphs_Framework
             return clone;
         }
 
-        public void DeleteNode(int node)
+        public void AddNode()
+        {
+            for (int i = 0; i < nodeCount; i++)
+            {
+                neighbourMatrix[i].Add(false);
+            }
+            nodeCount++;
+            neighbourMatrix.Add(new List<bool>(nodeCount));
+        }
+
+        public void RemoveNode(int node)
         {
             edgeCount -= CalculateDegree(node);
             nodeCount--; 

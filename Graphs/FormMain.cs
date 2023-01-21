@@ -11,7 +11,7 @@ using System.Windows.Threading;
 
 namespace Graphs_Framework
 {
-    public partial class Form1 : Form
+    public partial class FormMain : Form
     {
         public static string VERSION = "2.0.0";
 
@@ -27,7 +27,7 @@ namespace Graphs_Framework
 
         List<Double2> scaledPoints;
         Double2 mousePos;
-        bool mouseDown;
+        MouseButtons mouseBtnDown;
         double scale = 1;
 
         Stopwatch time = new Stopwatch();
@@ -78,7 +78,7 @@ namespace Graphs_Framework
 
         public static String FONT = "Segoe UI";
 
-        public Form1()
+        public FormMain()
         {
             time.Start();
 
@@ -253,17 +253,13 @@ namespace Graphs_Framework
             bPopularity.Update();
         }
 
-        /**
-         * Arranges the already existing graph nodes inside the list 'points'
-         * The method to arrange the points with is chosen based on the 'forceDirectedArrangement' variable
-         */
         private void ArrangePoints()
         {
             if (gm.Graph == null) return;
             if (gm.Graph.NeighbourMatrix == null) return;
 
             int radius = Math.Min(bmGraph.Width, bmGraph.Height) / 2 - 22;
-            gm.ArrangeCircle(radius, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
+            gm.ArrangeInCircle(radius, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
 
             if (forceDirectedArrangement)
             {
@@ -305,6 +301,8 @@ namespace Graphs_Framework
             scale = Math.Max(
                 (max.X - min.X) / (bmGraph.Width  - padding * 2 - 1), 
                 (max.Y - min.Y) / (bmGraph.Height - padding * 2 - 1));
+
+            if (scale == 0) scale = 1;
 
             for (int i = 0; i < ps.Count; i++)
             {
@@ -782,7 +780,7 @@ namespace Graphs_Framework
         private void timer_Tick(object sender, EventArgs e) {
             if (!forceDirectedArrangement) return;
             if (gm.Graph == null) return;
-            if (mouseDown && selectedNodeID >= 0) return;
+            if (mouseBtnDown != MouseButtons.None && selectedNodeID >= 0) return;
                 
             gm.AdvanceForceDirectedArrangement();
 
@@ -797,7 +795,7 @@ namespace Graphs_Framework
         private int GetSelectedNodeID(Double2 mouse)
         {
             if (scaledPoints == null || scaledPoints.Count == 0) return -1;
-            if (mouseDown) return selectedNodeID;
+            if (mouseBtnDown == MouseButtons.Left) return selectedNodeID;
 
             double minDistance = scaledPoints[0].DistanceFrom(mouse);
             int id = 0;
@@ -834,12 +832,12 @@ namespace Graphs_Framework
             mousePos = e.Location;
             selectedNodeID = GetSelectedNodeID(e.Location);
 
-            if (mouseDown && selectedNodeID >= 0)
+            if (mouseBtnDown == MouseButtons.Left && selectedNodeID >= 0)
             {
                 scaledPoints[selectedNodeID] = mousePos;
             }
 
-            if (!forceDirectedArrangement || mouseDown && selectedNodeID >= 0)
+            if (!forceDirectedArrangement || mouseBtnDown != MouseButtons.None && selectedNodeID >= 0)
             {
                 DrawGraph(false);
             }
@@ -847,35 +845,48 @@ namespace Graphs_Framework
 
         private void panelGraph_MouseDown(object sender, MouseEventArgs e)
         {
+            mouseBtnDown = e.Button;
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    mouseDown = true;
                     if (selectedNodeID >= 0)
                     {
                         selectedNodeOrigin = scaledPoints[selectedNodeID];
                     }
                     break;
+                case MouseButtons.Middle:
+                    
+                    break;
                 case MouseButtons.Right:
-                    if (selectedNodeID >= 0)
-                    {
-                        scaledPoints.RemoveAt(selectedNodeID);
-                        gm.DeleteNode(selectedNodeID);
-                        FillStatistics();
-                    }
+                    
                     break;
             }   
         }
 
         private void panelGraph_MouseUp(object sender, MouseEventArgs e)
         {
+            mouseBtnDown = MouseButtons.None;
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    mouseDown = false;
                     if (selectedNodeID >= 0)
                     {
                         gm.TranslateNode(selectedNodeID, (scaledPoints[selectedNodeID] - selectedNodeOrigin) * scale);
+                    }
+                    break;
+                case MouseButtons.Middle:
+
+                    break;
+                case MouseButtons.Right:
+                    if (selectedNodeID >= 0)
+                    {
+                        scaledPoints.RemoveAt(selectedNodeID);
+                        gm.RemoveNode(selectedNodeID);
+                        FillStatistics();
+                        UpdateChart();
+                        DrawChart();
+                        DrawGraph();
+                        mouseBtnDown = MouseButtons.None;
                     }
                     break;
             }
