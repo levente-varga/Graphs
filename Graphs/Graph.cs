@@ -7,8 +7,6 @@ namespace Graphs_Framework
 {
     public class Graph
     {
-        Random random = new Random();
-
         public enum Types 
         {
             Unknown,
@@ -74,6 +72,7 @@ namespace Graphs_Framework
 
         private static Graph GenerateRandomGraph(int nodes, double probability)
         {
+            Random random = new Random();
             Graph g = new Graph();
             g.nodeCount = nodes;
             g.probability = probability;
@@ -84,7 +83,7 @@ namespace Graphs_Framework
             {
                 for (int other = node + 1; other < g.nodeCount; other++)
                 {
-                    if (probability > g.random.NextDouble())
+                    if (probability > random.NextDouble())
                     {
                         g.AddEdge(node, other);
                     }
@@ -92,18 +91,20 @@ namespace Graphs_Framework
             }
             g.maxDegree = g.CalculateMaxDegree();
             g.type = Types.Random;
+
             return g;
         }
 
         private static Graph GeneratePopularityGraph(int nodes, double power)
         {
+            Random random = new Random();
             Graph g = new Graph();
             g.nodeCount = nodes;
             g.power = power;
             g.neighbourMatrix = g.CreateMatrix(g.nodeCount);
 
-            int startNode1 = g.random.Next(0, g.nodeCount);
-            int startNode2 = g.random.Next(0, g.nodeCount - 1);
+            int startNode1 = random.Next(0, g.nodeCount);
+            int startNode2 = random.Next(0, g.nodeCount - 1);
             if (startNode2 >= startNode1) startNode2++;
             if (startNode2 == g.nodeCount) startNode2 = 0;
 
@@ -119,7 +120,7 @@ namespace Graphs_Framework
                     if (j == i) continue;
                     double probability = (double)g.CalculateDegree(j) / (g.edgeCount * 2);
                     probability = Math.Pow(probability, 1 / power);
-                    double dice = g.random.NextDouble();
+                    double dice = random.NextDouble();
                     if (dice < probability)
                     {
                         g.AddEdge(i, j);
@@ -129,6 +130,7 @@ namespace Graphs_Framework
 
             g.maxDegree = g.CalculateMaxDegree();
             g.type = Types.Popularity;
+
             return g;
         }
 
@@ -210,6 +212,34 @@ namespace Graphs_Framework
         public bool HasEdge(int node1, int node2)
         {
             return neighbourMatrix[node1][node2] || neighbourMatrix[node2][node1];
+        }
+
+        public Graph Clone()
+        {
+            Graph clone = new Graph();
+            clone.neighbourMatrix = neighbourMatrix;
+            clone.edgeCount = edgeCount;
+            clone.nodeCount = nodeCount;
+            clone.maxDegree = maxDegree;
+            clone.power = power;
+            clone.probability= probability;
+            clone.type = type;
+
+            return clone;
+        }
+
+        public void DeleteNode(int node)
+        {
+            edgeCount -= CalculateDegree(node);
+            nodeCount--; 
+
+            neighbourMatrix.RemoveAt(node);
+            for (int i = 0; i < neighbourMatrix.Count; i++)
+            {
+                neighbourMatrix[i].RemoveAt(node);
+            }
+
+            maxDegree = CalculateMaxDegree();
         }
 
         public override string ToString()

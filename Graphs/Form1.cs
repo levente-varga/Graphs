@@ -25,7 +25,6 @@ namespace Graphs_Framework
         Graphics chartDrawerGraphics;
         Graphics graphPanelDrawerGraphics;
 
-        List<Double2> points;
         List<Double2> scaledPoints;
         Double2 mousePos;
         bool mouseDown;
@@ -97,7 +96,6 @@ namespace Graphs_Framework
 
             mainColor = yellow;
 
-            points = new List<Double2>();
             scaledPoints = new List<Double2>();
 
             lastWindowState = WindowState;
@@ -265,7 +263,7 @@ namespace Graphs_Framework
             if (gm.Graph.NeighbourMatrix == null) return;
 
             int radius = Math.Min(bmGraph.Width, bmGraph.Height) / 2 - 22;
-            points = gm.GenerateCircularArrangement(radius, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
+            gm.ArrangeCircle(radius, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
 
             if (forceDirectedArrangement)
             {
@@ -333,14 +331,14 @@ namespace Graphs_Framework
             
             if (scale)
             {
-                scaledPoints = new List<Double2>(points);
+                scaledPoints = new List<Double2>(gm.Points);
                 FitToCanvas(scaledPoints, GetGraphPadding(), forceDirectedArrangement);
             }
             
             // Text
             if (showDegree && !forceDirectedArrangement)
             {
-                List<Double2> textPositions = gm.GenerateCircularArrangement(radius + 15, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
+                List<Double2> textPositions = gm.GetCircularArrangement(gm.Graph.NodeCount, radius + 15, new Double2(bmGraph.Width / 2, bmGraph.Height / 2));
                 FitToCanvas(textPositions, 7, forceDirectedArrangement);
                 for (int i = 0; i < gm.Graph.NodeCount; i++)
                 {
@@ -786,7 +784,7 @@ namespace Graphs_Framework
             if (gm.Graph == null) return;
             if (mouseDown && selectedNodeID >= 0) return;
                 
-            points = gm.AdvanceForceDirectedArrangement();
+            gm.AdvanceForceDirectedArrangement();
 
             if (graphHovered)
             {
@@ -814,7 +812,7 @@ namespace Graphs_Framework
                 }
             }   
 
-            if (minDistance > NODE_SIZE) id = -1;
+            if (minDistance > NODE_SIZE * 1.5) id = -1;
             
             return id;
         }
@@ -843,29 +841,43 @@ namespace Graphs_Framework
 
             if (!forceDirectedArrangement || mouseDown && selectedNodeID >= 0)
             {
-                Debug.WriteLine($"force: {forceDirectedArrangement}, mouseDown: {mouseDown}, selected: {selectedNodeID >= 0}");
                 DrawGraph(false);
             }
         }
 
         private void panelGraph_MouseDown(object sender, MouseEventArgs e)
         {
-            mouseDown = true;
-            if (selectedNodeID >= 0)
+            switch (e.Button)
             {
-                selectedNodeOrigin = scaledPoints[selectedNodeID];
-                Debug.WriteLine($"Started dragging from {selectedNodeOrigin}");
-            }
+                case MouseButtons.Left:
+                    mouseDown = true;
+                    if (selectedNodeID >= 0)
+                    {
+                        selectedNodeOrigin = scaledPoints[selectedNodeID];
+                    }
+                    break;
+                case MouseButtons.Right:
+                    if (selectedNodeID >= 0)
+                    {
+                        scaledPoints.RemoveAt(selectedNodeID);
+                        gm.DeleteNode(selectedNodeID);
+                        FillStatistics();
+                    }
+                    break;
+            }   
         }
 
         private void panelGraph_MouseUp(object sender, MouseEventArgs e)
         {
-            mouseDown = false;
-
-            if (selectedNodeID >= 0)
+            switch (e.Button)
             {
-                Debug.WriteLine($"Translate from {selectedNodeOrigin} to {scaledPoints[selectedNodeID]}");
-                gm.TranslateNode(selectedNodeID, (scaledPoints[selectedNodeID] - selectedNodeOrigin) * scale);
+                case MouseButtons.Left:
+                    mouseDown = false;
+                    if (selectedNodeID >= 0)
+                    {
+                        gm.TranslateNode(selectedNodeID, (scaledPoints[selectedNodeID] - selectedNodeOrigin) * scale);
+                    }
+                    break;
             }
         }
     }

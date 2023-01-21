@@ -12,6 +12,7 @@ namespace Graphs_Framework
     public class GraphManager 
     {
         private Graph lastGraph;
+        private Graph currentGraph;
         private const double IDEAL_SPRING_LENGTH = 10.0;
         double cooling = 1;
         int arrangementStep = 1;
@@ -49,8 +50,9 @@ namespace Graphs_Framework
 
         public void GenerateGraph(Graph.Types type, int nodes, double probability, double power)
         {
-            lastGraph = graph;
+            lastGraph = currentGraph;
             graph = Graph.GenerateGraph(type, nodes, probability, power);
+            currentGraph = graph.Clone();
 
             if (GraphParametersChanged())
             {
@@ -65,10 +67,10 @@ namespace Graphs_Framework
         private bool GraphParametersChanged()
         {
             if (lastGraph == null) return true;
-            return graph.NodeCount != lastGraph.NodeCount
-                || graph.Probability != lastGraph.Probability
-                || graph.Power != lastGraph.Power
-                || graph.Type != lastGraph.Type;
+            return currentGraph.NodeCount != lastGraph.NodeCount
+                || currentGraph.Probability != lastGraph.Probability
+                || currentGraph.Power != lastGraph.Power
+                || currentGraph.Type != lastGraph.Type;
         }
 
         private void UpdateAverageDegreeDistribution()
@@ -88,29 +90,30 @@ namespace Graphs_Framework
 
 
 
-        public List<Double2> GenerateCircularArrangement(double R) => GenerateCircularArrangement(R, new Double2(0, 0));
-        public List<Double2> GenerateCircularArrangement(double R, Double2 Origo) 
+        public void ArrangeCircle(double radius) => ArrangeCircle(radius, 0);
+        public void ArrangeCircle(double radius, Double2 origo) 
         {
-            points = new List<Double2>();
+            points = GetCircularArrangement(graph.NodeCount, radius, origo);
+        }
 
-            for (int i = 0; i < graph.NodeCount; i++) 
+        public List<Double2> GetCircularArrangement(int n, double radius) => GetCircularArrangement(n, radius, 0);
+        public List<Double2> GetCircularArrangement(int n, double radius, Double2 origo)
+        {
+            List<Double2> points = new List<Double2>();
+
+            for (int i = 0; i < n; i++)
             {
-                points.Add(new Double2(
-                    Origo.X + CalculateCoordinateX(i, graph.NodeCount, R),
-                    Origo.Y + CalculateCoordinateY(i, graph.NodeCount, R)));
+                points.Add(new Double2(origo + GetPositionInCircle(i, graph.NodeCount, radius)));
             }
 
             return points;
         }
 
-        private static double CalculateCoordinateX(int N, int maxN, double R)
+        private Double2 GetPositionInCircle(int i, int total, double radius)
         {
-            return Math.Cos(2 * Math.PI * ((double)N / maxN)) * R;
-        }
-
-        private static double CalculateCoordinateY(int N, int maxN, double R)
-        {
-            return Math.Sin(2 * Math.PI * ((double)N / maxN)) * R;
+            return new Double2(
+                Math.Cos(2 * Math.PI * ((double)i / total)) * radius,
+                Math.Sin(2 * Math.PI * ((double)i / total)) * radius);
         }
 
 
@@ -119,14 +122,14 @@ namespace Graphs_Framework
         {
             arrangementStep = 1;
             cooling = 1;
-            GenerateCircularArrangement(1);
+            ArrangeCircle(1);
         }
 
-        public List<Double2> AdvanceForceDirectedArrangement() => AdvanceForceDirectedArrangement(new List<int> {});
-        public List<Double2> AdvanceForceDirectedArrangement(int fixedPoint) => AdvanceForceDirectedArrangement(new List<int> { fixedPoint });
-        public List<Double2> AdvanceForceDirectedArrangement(List<int> fixedPoints) 
+        public void AdvanceForceDirectedArrangement() => AdvanceForceDirectedArrangement(new List<int> {});
+        public void AdvanceForceDirectedArrangement(int fixedPoint) => AdvanceForceDirectedArrangement(new List<int> { fixedPoint });
+        public void AdvanceForceDirectedArrangement(List<int> fixedPoints) 
         {
-            if (graph == null) return new List<Double2>();
+            if (graph == null) return;
 
             double maxF = 0;
             double coolingFactor = 1;
@@ -171,13 +174,20 @@ namespace Graphs_Framework
 
             cooling *= coolingFactor;
             arrangementStep++;
-            return points;
         }
 
 
         public void TranslateNode(int i, Double2 t)
         {
             points[i] += t;
+        }
+
+        public void DeleteNode(int i)
+        {
+            points.RemoveAt(i);
+            graph.DeleteNode(i);
+
+            Debug.WriteLine(graph);
         }
     }
 }
