@@ -184,20 +184,20 @@ namespace Graphs_Framework
             if (generateSamples)
             {
                 GenerateGraph(selectedGraphType);
-                return;
-            }
-
-            if (!forceDirectedArrangement) return;
-            if (mouseBtnDown != MouseButtons.None && selectedNodeID >= 0) return;
-
-            gm.AdvanceForceDirectedArrangement();
-
-            if (graphHovered)
+            } 
+            else if (forceDirectedArrangement)
             {
-                selectedNodeID = GetSelectedNodeID(mousePos);
-            }
+                if (mouseBtnDown != MouseButtons.None && selectedNodeID >= 0) return;
 
-            DrawGraph();
+                gm.AdvanceForceDirectedArrangement();
+
+                if (graphHovered)
+                {
+                    selectedNodeID = GetSelectedNodeID(mousePos);
+                }
+
+                DrawGraph();
+            }
         }
 
 
@@ -441,6 +441,13 @@ namespace Graphs_Framework
             selectionBrush.Dispose();
         }
 
+        private double RoundDouble(double n, int decimals) 
+        {
+            if (decimals < 0) return 0;
+            double multiplier = Math.Pow(10, decimals);
+            return Convert.ToInt32(n * multiplier) / multiplier; 
+        }
+
         private void DrawChart()
         {
             if (gm.Graph == null) return;
@@ -471,7 +478,7 @@ namespace Graphs_Framework
                 return;
             }
             
-            roundedMaxValue = ((int)(values.Max() * 10.0)) / 10.0;
+            roundedMaxValue = RoundDouble(values.Max(), 4);
 
             SolidBrush brush = null;
             switch (selectedChartType)
@@ -491,7 +498,6 @@ namespace Graphs_Framework
 
             if (sortChart) values.Sort(delegate (double a, double b) { return a > b ? -1 : 1; });
 
-            //horizontalOffset = selectedChartType == Chart.Types.AverageDegree ? roundedMaxValue >= 10.0 ? 10 : 3 : 0;
             int startX = showChartValues ? CHART_VERTICAL_VALUES_WIDTH + horizontalOffset : 0;
             int chartWidth = showChartValues ? panelChart.Width - (CHART_VERTICAL_VALUES_WIDTH + horizontalOffset) : panelChart.Width;
             int chartHeight = (showChartValues && !sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree)) ? panelChart.Height - CHART_HORIZONTAL_VALUES_HEIGHT : panelChart.Height;
@@ -520,7 +526,7 @@ namespace Graphs_Framework
 
                 string tMaxValue;
                 if (roundedMaxValue != (double)(int)roundedMaxValue)
-                    tMaxValue = roundedMaxValue.ToString("0.0");
+                    tMaxValue = RoundDouble(roundedMaxValue, 1).ToString("0.0");
                 else
                     tMaxValue = ((int)roundedMaxValue).ToString();
                 chartDrawerGraphics.DrawString(tMaxValue, font, brush, 0, chartHeight - linePosY > 17 ? linePosY : linePosY - 17);
@@ -557,7 +563,8 @@ namespace Graphs_Framework
 
                 if (i % 2 == 0)
                 {
-                    int h = (int)((double)values[i / 2] / (stretchChart ? roundedMaxValue : maxOrdinate) * chartHeight);
+                    // TODO
+                    int h = (int)(RoundDouble(values[i / 2], 4) / (stretchChart ? roundedMaxValue : maxOrdinate) * chartHeight);
                     int y = chartHeight - h;
 
                     chartDrawerGraphics.FillRectangle(brush, (int)x, y, (int)w, h);
@@ -868,7 +875,7 @@ namespace Graphs_Framework
                 scaledPoints[selectedNodeID] = mousePos;
             }
 
-            if (!forceDirectedArrangement || mouseBtnDown != MouseButtons.None && selectedNodeID >= 0)
+            if (!generateSamples && (!forceDirectedArrangement || mouseBtnDown != MouseButtons.None && selectedNodeID >= 0))
             {
                 DrawGraph(false);
             }
@@ -922,7 +929,5 @@ namespace Graphs_Framework
                     break;
             }
         }
-
-        
     }
 }

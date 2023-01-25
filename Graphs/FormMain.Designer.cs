@@ -41,6 +41,7 @@ namespace Graphs_Framework
             this.lEdgeCount = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.bGenerateSamples = new System.Windows.Forms.Button();
             this.pProgressBar = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -71,7 +72,6 @@ namespace Graphs_Framework
             this.panelGraph = new DoubleBufferedPanel();
             this.lVersion = new System.Windows.Forms.Label();
             this.timer = new System.Windows.Forms.Timer(this.components);
-            this.bGenerateSamples = new System.Windows.Forms.Button();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarPower)).BeginInit();
@@ -233,6 +233,21 @@ namespace Graphs_Framework
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(530, 310);
             this.panel1.TabIndex = 0;
+            // 
+            // bGenerateSamples
+            // 
+            this.bGenerateSamples.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.bGenerateSamples.FlatAppearance.BorderSize = 0;
+            this.bGenerateSamples.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bGenerateSamples.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.bGenerateSamples.ForeColor = System.Drawing.Color.White;
+            this.bGenerateSamples.Location = new System.Drawing.Point(98, 195);
+            this.bGenerateSamples.Name = "bGenerateSamples";
+            this.bGenerateSamples.Size = new System.Drawing.Size(116, 25);
+            this.bGenerateSamples.TabIndex = 28;
+            this.bGenerateSamples.Text = "Minták generálása";
+            this.bGenerateSamples.UseVisualStyleBackColor = false;
+            this.bGenerateSamples.Click += new System.EventHandler(this.bGenerateSamples_Click);
             // 
             // pProgressBar
             // 
@@ -601,7 +616,7 @@ namespace Graphs_Framework
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelGraph.Location = new System.Drawing.Point(30, 30);
             this.panelGraph.Name = "panelGraph";
-            this.panelGraph.Size = new System.Drawing.Size(663, 660);
+            this.panelGraph.Size = new System.Drawing.Size(660, 660);
             this.panelGraph.TabIndex = 11;
             this.panelGraph.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelGraph_MouseDown);
             this.panelGraph.MouseEnter += new System.EventHandler(this.panelGraph_MouseEnter);
@@ -614,7 +629,7 @@ namespace Graphs_Framework
             this.lVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lVersion.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Bold);
             this.lVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.lVersion.Location = new System.Drawing.Point(639, 703);
+            this.lVersion.Location = new System.Drawing.Point(633, 703);
             this.lVersion.Name = "lVersion";
             this.lVersion.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
             this.lVersion.Size = new System.Drawing.Size(86, 17);
@@ -624,21 +639,6 @@ namespace Graphs_Framework
             // timer
             // 
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
-            // 
-            // bGenerateSamples
-            // 
-            this.bGenerateSamples.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
-            this.bGenerateSamples.FlatAppearance.BorderSize = 0;
-            this.bGenerateSamples.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bGenerateSamples.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.bGenerateSamples.ForeColor = System.Drawing.Color.White;
-            this.bGenerateSamples.Location = new System.Drawing.Point(98, 195);
-            this.bGenerateSamples.Name = "bGenerateSamples";
-            this.bGenerateSamples.Size = new System.Drawing.Size(116, 25);
-            this.bGenerateSamples.TabIndex = 28;
-            this.bGenerateSamples.Text = "Minták generálása";
-            this.bGenerateSamples.UseVisualStyleBackColor = false;
-            this.bGenerateSamples.Click += new System.EventHandler(this.bGenerateSamples_Click);
             // 
             // FormMain
             // 
