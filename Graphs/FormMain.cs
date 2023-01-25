@@ -15,7 +15,7 @@ namespace Graphs_Framework
     {
         public static string VERSION = "2.0.0";
 
-        Chart.Type selectedChartType = 0;
+        Chart.Types selectedChartType = 0;
         Graph.Types selectedGraphType = 0;
 
         private GraphManager gm;
@@ -30,8 +30,7 @@ namespace Graphs_Framework
         MouseButtons mouseBtnDown;
         double scale = 1;
 
-        Stopwatch time = new Stopwatch();
-        double lastElapsedTime = 0;
+        long time = 0;
 
         bool stretchChart = false;
         bool gradient = false;
@@ -41,6 +40,7 @@ namespace Graphs_Framework
         bool showChartValues = true;
         bool forceDirectedArrangement = false;
         bool showChart = true;
+        bool generateSamples = false;
 
         bool graphHovered = false;
         int selectedNodeID = -1;
@@ -80,8 +80,6 @@ namespace Graphs_Framework
 
         public FormMain()
         {
-            time.Start();
-
             Console.WriteLine($"Version: {Environment.Version}");
 
             InitializeComponent();
@@ -175,10 +173,40 @@ namespace Graphs_Framework
             lValueOfProbability.Update();
         }
 
+
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            time++;
+
+            if (gm.Graph == null) return;
+
+            if (generateSamples)
+            {
+                GenerateGraph(selectedGraphType);
+                return;
+            }
+
+            if (!forceDirectedArrangement) return;
+            if (mouseBtnDown != MouseButtons.None && selectedNodeID >= 0) return;
+
+            gm.AdvanceForceDirectedArrangement();
+
+            if (graphHovered)
+            {
+                selectedNodeID = GetSelectedNodeID(mousePos);
+            }
+
+            DrawGraph();
+        }
+
+
+
         private void buttonGenRnd_Click(object sender, EventArgs e) => GenerateGraph(Graph.Types.Random);
         private void buttonGenPop_Click(object sender, EventArgs e) => GenerateGraph(Graph.Types.Popularity);
         private void GenerateGraph(Graph.Types graphType) 
         {
+            if (graphType == Graph.Types.None) graphType = Graph.Types.Random;
             gm.GenerateGraph(graphType, valueOfNodes(), valueOfProbability(), valueOfPower());
 
             switch (graphType) {
@@ -190,6 +218,7 @@ namespace Graphs_Framework
                     break;
             }
 
+            selectedGraphType = graphType;
             pProgressBar.BackColor = mainColor;
             ArrangePoints();
             DrawUI();
@@ -426,13 +455,14 @@ namespace Graphs_Framework
             }
 
             List<double> values = null;
-            int maxValue = 0;
+            int maxOrdinate = 0;
+            double roundedMaxValue = 0;
 
             switch (selectedChartType)
             {
-                case Chart.Type.Node: values = GetNodeList(); maxValue = gm.Graph.NodeCount - 1; break;
-                case Chart.Type.Degree: values = GetDegreeList(); maxValue = gm.Graph.NodeCount; break;
-                case Chart.Type.AverageDegree: values = GetAverageDegreeList(); maxValue = gm.Graph.NodeCount; break;
+                case Chart.Types.Node: values = GetNodeList(); maxOrdinate = gm.Graph.NodeCount - 1; break;
+                case Chart.Types.Degree: values = GetDegreeList(); maxOrdinate = gm.Graph.NodeCount; break;
+                case Chart.Types.AverageDegree: values = GetAverageDegreeList(); maxOrdinate = gm.Graph.NodeCount; break;
             }
 
             if (values == null || values.Count == 0)
@@ -440,21 +470,31 @@ namespace Graphs_Framework
                 UpdateChart();
                 return;
             }
+            
+            roundedMaxValue = ((int)(values.Max() * 10.0)) / 10.0;
 
             SolidBrush brush = null;
             switch (selectedChartType)
             {
-                case Chart.Type.Node: brush = new SolidBrush(mainColor); break;
-                case Chart.Type.Degree: brush = new SolidBrush(blue); break;
-                case Chart.Type.AverageDegree: brush = new SolidBrush(orange); break;
+                case Chart.Types.Node: brush = new SolidBrush(mainColor); break;
+                case Chart.Types.Degree: brush = new SolidBrush(blue); break;
+                case Chart.Types.AverageDegree: brush = new SolidBrush(orange); break;
+            }
+
+            int horizontalOffset = 0;
+            switch (selectedChartType)
+            {
+                case Chart.Types.Node: horizontalOffset = 0; break;
+                case Chart.Types.Degree: horizontalOffset = 0;  break;
+                case Chart.Types.AverageDegree: horizontalOffset = 10; break;
             }
 
             if (sortChart) values.Sort(delegate (double a, double b) { return a > b ? -1 : 1; });
 
-            int horizontalOffset = selectedChartType == Chart.Type.AverageDegree ? values.Max() >= 10.0 ? 10 : 3 : 0;
+            //horizontalOffset = selectedChartType == Chart.Types.AverageDegree ? roundedMaxValue >= 10.0 ? 10 : 3 : 0;
             int startX = showChartValues ? CHART_VERTICAL_VALUES_WIDTH + horizontalOffset : 0;
             int chartWidth = showChartValues ? panelChart.Width - (CHART_VERTICAL_VALUES_WIDTH + horizontalOffset) : panelChart.Width;
-            int chartHeight = (showChartValues && !sortChart && (selectedChartType == Chart.Type.Degree || selectedChartType == Chart.Type.AverageDegree)) ? panelChart.Height - CHART_HORIZONTAL_VALUES_HEIGHT : panelChart.Height;
+            int chartHeight = (showChartValues && !sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree)) ? panelChart.Height - CHART_HORIZONTAL_VALUES_HEIGHT : panelChart.Height;
 
             double x = startX;
             double columnFactor = values.Count * CHART_COLUMN_WIDTH_RATIO;
@@ -474,18 +514,18 @@ namespace Graphs_Framework
                 if (stretchChart)
                     linePosY = 0;
                 else
-                    linePosY = (int)((1 - (double)values.Max() / maxValue) * chartHeight);
+                    linePosY = (int)((1 - roundedMaxValue / maxOrdinate) * chartHeight);
 
                 chartDrawerGraphics.DrawLine(pen, 0, linePosY, panelChart.Width, linePosY);
 
                 string tMaxValue;
-                if (values.Max() != (double)(int)values.Max())
-                    tMaxValue = values.Max().ToString("0.0");
+                if (roundedMaxValue != (double)(int)roundedMaxValue)
+                    tMaxValue = roundedMaxValue.ToString("0.0");
                 else
-                    tMaxValue = ((int)values.Max()).ToString();
+                    tMaxValue = ((int)roundedMaxValue).ToString();
                 chartDrawerGraphics.DrawString(tMaxValue, font, brush, 0, chartHeight - linePosY > 17 ? linePosY : linePosY - 17);
 
-                if (!sortChart && (selectedChartType == Chart.Type.Degree || selectedChartType == Chart.Type.AverageDegree))
+                if (!sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree))
                 {
                     double textX = startX;
                     for (int i = 0; i < values.Count * 2 - 1; i++)
@@ -517,7 +557,7 @@ namespace Graphs_Framework
 
                 if (i % 2 == 0)
                 {
-                    int h = (int)((double)values[i / 2] / (stretchChart ? values.Max() : maxValue) * chartHeight);
+                    int h = (int)((double)values[i / 2] / (stretchChart ? roundedMaxValue : maxOrdinate) * chartHeight);
                     int y = chartHeight - h;
 
                     chartDrawerGraphics.FillRectangle(brush, (int)x, y, (int)w, h);
@@ -663,9 +703,15 @@ namespace Graphs_Framework
         {
             forceDirectedArrangement = !forceDirectedArrangement;
             bArrangement.BackColor = getToggleButtonColor(forceDirectedArrangement);
-            timer.Enabled = forceDirectedArrangement;
+            //timer.Enabled = forceDirectedArrangement;
             ArrangePoints();
             DrawGraph();
+        }
+
+        private void bGenerateSamples_Click(object sender, EventArgs e)
+        {
+            generateSamples = !generateSamples;
+            bGenerateSamples.BackColor = getToggleButtonColor(generateSamples);
         }
 
         private void UpdateChartButtons()
@@ -678,9 +724,9 @@ namespace Graphs_Framework
             {
                 switch (selectedChartType)
                 {
-                    case Chart.Type.Node: bChart1.BackColor = mainColor; break;
-                    case Chart.Type.Degree: bChart2.BackColor = blue; break;
-                    case Chart.Type.AverageDegree: bChart3.BackColor = orange; break;
+                    case Chart.Types.Node: bChart1.BackColor = mainColor; break;
+                    case Chart.Types.Degree: bChart2.BackColor = blue; break;
+                    case Chart.Types.AverageDegree: bChart3.BackColor = orange; break;
                 }
             }
 
@@ -691,7 +737,7 @@ namespace Graphs_Framework
 
         private void bChart1_Click(object sender, EventArgs e)
         {
-            if (selectedChartType == Chart.Type.Node)
+            if (selectedChartType == Chart.Types.Node)
             {
                 showChart = !showChart;
             }
@@ -699,14 +745,14 @@ namespace Graphs_Framework
             {
                 showChart = true;
             }
-            selectedChartType = Chart.Type.Node;
+            selectedChartType = Chart.Types.Node;
             UpdateChartButtons();
             DrawChart();
         }
 
         private void bChart2_Click(object sender, EventArgs e)
         {
-            if (selectedChartType == Chart.Type.Degree)
+            if (selectedChartType == Chart.Types.Degree)
             {
                 showChart = !showChart;
             }
@@ -714,14 +760,14 @@ namespace Graphs_Framework
             {
                 showChart = true;
             }
-            selectedChartType = Chart.Type.Degree;
+            selectedChartType = Chart.Types.Degree;
             UpdateChartButtons();
             DrawChart();
         }
 
         private void bChart3_Click(object sender, EventArgs e)
         {
-            if (selectedChartType == Chart.Type.AverageDegree)
+            if (selectedChartType == Chart.Types.AverageDegree)
             {
                 showChart = !showChart;
             }
@@ -729,7 +775,7 @@ namespace Graphs_Framework
             {
                 showChart = true;
             }
-            selectedChartType = Chart.Type.AverageDegree;
+            selectedChartType = Chart.Types.AverageDegree;
             UpdateChartButtons();
             DrawChart();
         }
@@ -775,21 +821,6 @@ namespace Graphs_Framework
         private void panelGraph_Paint(object sender, PaintEventArgs e)
         {
 
-        }
-
-        private void timer_Tick(object sender, EventArgs e) {
-            if (!forceDirectedArrangement) return;
-            if (gm.Graph == null) return;
-            if (mouseBtnDown != MouseButtons.None && selectedNodeID >= 0) return;
-                
-            gm.AdvanceForceDirectedArrangement();
-
-            if (graphHovered)
-            {
-                selectedNodeID = GetSelectedNodeID(mousePos);
-            }
-
-            DrawGraph();
         }
 
         private int GetSelectedNodeID(Double2 mouse)
@@ -891,5 +922,7 @@ namespace Graphs_Framework
                     break;
             }
         }
+
+        
     }
 }

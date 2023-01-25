@@ -51,6 +51,9 @@
   <ItemGroup>
     <Compile Include="Chart.cs" />
     <Compile Include="Double2.cs" />
+    <Compile Include="DoubleBufferedPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>

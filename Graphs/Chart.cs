@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Graphs_Framework {
     public class Chart 
     {
-        public enum Type {
+        public enum Types {
             Node,
             Degree,
             AverageDegree,

@@ -9,7 +9,7 @@ namespace Graphs_Framework
     {
         public enum Types 
         {
-            Unknown,
+            None,
             Random,
             Popularity,
         }
