@@ -50,12 +50,11 @@ namespace Graphs_Framework
         bool showChart = true;
         bool generateSamples = false;
 
-        bool graphHovered = false;
         int selectedColumnID = -1; 
         int selectedNodeID = -1;
         Double2 selectedNodeOrigin;
 
-        Color mainColor;
+        List<Rectangle> chartColumns;
 
         Bitmap bmGraph;
         Bitmap bmChart;
@@ -77,7 +76,7 @@ namespace Graphs_Framework
         private const double PROBABILITY_INIT = 0.5;
         private const double POWER_INIT = 1.0;
 
-        public static String FONT = "Segoe UI";
+        public static string FONT = "Segoe UI";
 
         public FormMain()
         {
@@ -93,9 +92,8 @@ namespace Graphs_Framework
             timer.Enabled = true;
             timer.Interval = 1;
 
-            mainColor = Colors.yellow;
-
             scaledPoints = new List<Double2>();
+            chartColumns = new List<Rectangle>();
 
             lastWindowState = WindowState;
 
@@ -192,12 +190,13 @@ namespace Graphs_Framework
 
                 gm.AdvanceForceDirectedArrangement();
 
-                if (graphHovered)
+                if (hoveredPanel == Panels.Graph)
                 {
                     selectedNodeID = GetSelectedNodeID(mousePos);
                 }
 
                 DrawGraph();
+                DrawChart();
             }
         }
 
@@ -210,17 +209,10 @@ namespace Graphs_Framework
             if (graphType == Graph.Types.None) graphType = Graph.Types.Random;
             gm.GenerateGraph(graphType, valueOfNodes(), valueOfProbability(), valueOfPower());
 
-            switch (graphType) {
-                case Graph.Types.Random:
-                    mainColor = Colors.yellow;
-                    break;
-                case Graph.Types.Popularity:
-                    mainColor = Colors.green;
-                    break;
-            }
+            Colors.UpdateMainColor(graphType);
 
             selectedGraphType = graphType;
-            pProgressBar.BackColor = mainColor;
+            pProgressBar.BackColor = Colors.main;
             ArrangePoints();
             DrawUI();
         }
@@ -348,9 +340,9 @@ namespace Graphs_Framework
             if (gm.Graph.NeighbourMatrix == null) return;
 
             Font font = new Font(FONT, 10);
-            SolidBrush brush = new SolidBrush(mainColor);
+            SolidBrush brush = new SolidBrush(Colors.main);
             SolidBrush selectionBrush = new SolidBrush(Colors.selection);
-            Pen pen = new Pen(mainColor);
+            Pen pen = new Pen(Colors.main);
             Pen sPen = new Pen(Colors.selection);
 
             graphDrawerGraphics.Clear(Colors.background);
@@ -449,6 +441,11 @@ namespace Graphs_Framework
             return Convert.ToInt32(n * multiplier) / multiplier; 
         }
 
+        private int CalculateColumnHeight(List<double> values, int i, double maxValue, int maxOrdinate, int chartHeight)
+        {
+            return (int)(values[i] / (stretchChart ? maxValue : maxOrdinate) * chartHeight);
+        }
+
         private void DrawChart()
         {
             if (gm.Graph == null) return;
@@ -464,7 +461,6 @@ namespace Graphs_Framework
 
             List<double> values = null;
             int maxOrdinate = 0;
-            double roundedMaxValue = 0;
 
             switch (selectedChartType)
             {
@@ -478,13 +474,21 @@ namespace Graphs_Framework
                 UpdateChart();
                 return;
             }
-            
-            roundedMaxValue = RoundDouble(values.Max(), 4);
 
+            if (sortChart) values.Sort((double a, double b) => a > b ? -1 : 1);
+
+
+            double maxValue = values.Max();
+            double measuredValue = selectedColumnID >= 0 ? values[selectedColumnID] : maxValue;
+            int maxValueColumnID = values.FindIndex((n) => n == maxValue);
+            int measuredColumnID = selectedColumnID >= 0 ? selectedColumnID : maxValueColumnID;
+
+
+            SolidBrush selectionBrush = new SolidBrush(Colors.selection);
             SolidBrush brush = null;
             switch (selectedChartType)
             {
-                case Chart.Types.Node: brush = new SolidBrush(mainColor); break;
+                case Chart.Types.Node: brush = new SolidBrush(Colors.main); break;
                 case Chart.Types.Degree: brush = new SolidBrush(Colors.blue); break;
                 case Chart.Types.AverageDegree: brush = new SolidBrush(Colors.orange); break;
             }
@@ -497,40 +501,42 @@ namespace Graphs_Framework
                 case Chart.Types.AverageDegree: horizontalOffset = 10; break;
             }
 
-            if (sortChart) values.Sort(delegate (double a, double b) { return a > b ? -1 : 1; });
+            int startX = showChartValues 
+                ? CHART_VERTICAL_VALUES_WIDTH + horizontalOffset 
+                : 0;
+            int chartWidth = showChartValues 
+                ? panelChart.Width - (CHART_VERTICAL_VALUES_WIDTH + horizontalOffset) 
+                : panelChart.Width;
+            int chartHeight = (showChartValues && !sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree)) 
+                ? panelChart.Height - CHART_HORIZONTAL_VALUES_HEIGHT 
+                : panelChart.Height - 1;
 
-            int startX = showChartValues ? CHART_VERTICAL_VALUES_WIDTH + horizontalOffset : 0;
-            int chartWidth = showChartValues ? panelChart.Width - (CHART_VERTICAL_VALUES_WIDTH + horizontalOffset) : panelChart.Width;
-            int chartHeight = (showChartValues && !sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree)) ? panelChart.Height - CHART_HORIZONTAL_VALUES_HEIGHT : panelChart.Height;
-
-            double x = startX;
             double columnFactor = values.Count * CHART_COLUMN_WIDTH_RATIO;
             double gapFactor = (values.Count - 1) * (1 - CHART_COLUMN_WIDTH_RATIO);
             double totalWidth = columnFactor + gapFactor;
             double columnWidth = (chartWidth * (columnFactor / totalWidth)) / values.Count;
             double gapWidth = (chartWidth * (gapFactor / totalWidth)) / (values.Count - 1);
 
+            // Values
+
             if (showChartValues)
             {
-                Pen pen = new Pen(Colors.foreground);
                 Font font = new Font(FONT, 10);
                 float[] dashValues = { 4, 4 };
+                Pen pen = new Pen(Colors.foreground);
                 pen.DashPattern = dashValues;
 
-                int linePosY;
-                if (stretchChart)
-                    linePosY = 0;
-                else
-                    linePosY = (int)((1 - roundedMaxValue / maxOrdinate) * chartHeight);
+                int measuredColumnHeight = CalculateColumnHeight(values, measuredColumnID, maxValue, maxOrdinate, chartHeight);
+                int linePosY = chartHeight - measuredColumnHeight;
 
                 chartDrawerGraphics.DrawLine(pen, 0, linePosY, panelChart.Width, linePosY);
 
-                string tMaxValue;
-                if (roundedMaxValue != (double)(int)roundedMaxValue)
-                    tMaxValue = RoundDouble(roundedMaxValue, 1).ToString("0.0");
+                string tMeasuredValue;
+                if (measuredValue != RoundDouble(measuredValue, 0))
+                    tMeasuredValue = RoundDouble(measuredValue, 1).ToString("0.0");
                 else
-                    tMaxValue = ((int)roundedMaxValue).ToString();
-                chartDrawerGraphics.DrawString(tMaxValue, font, brush, 0, chartHeight - linePosY > 17 ? linePosY : linePosY - 17);
+                    tMeasuredValue = RoundDouble(measuredValue, 0).ToString();
+                chartDrawerGraphics.DrawString(tMeasuredValue, font, brush, 0, chartHeight - linePosY > 17 ? linePosY : linePosY - 17);
 
                 if (!sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree))
                 {
@@ -545,8 +551,10 @@ namespace Graphs_Framework
                             if (column % (int)Math.Sqrt(values.Count) == 0)
                             {
                                 chartDrawerGraphics.DrawString(
-                                    column.ToString(), font, brush,
-                                    (int)(textX + columnWidth / 2 - (column < 10 ? 5 : 9.5)), chartHeight + 1);
+                                    column.ToString(), 
+                                    font, brush,
+                                    (int)(textX + columnWidth / 2 - (column < 10 ? 5 : 9.5)), 
+                                    chartHeight + 1);
                             }
                         }
 
@@ -558,23 +566,38 @@ namespace Graphs_Framework
                 pen.Dispose();
             }
 
+            // Columns
+
+            chartColumns.Clear();
+            double x = startX;
             for (int i = 0; i < values.Count * 2 - 1; i++)
             {
                 double w = i % 2 == 0 ? columnWidth : gapWidth;
 
                 if (i % 2 == 0)
                 {
-                    // TODO
-                    int h = (int)(RoundDouble(values[i / 2], 4) / (stretchChart ? roundedMaxValue : maxOrdinate) * chartHeight);
+                    int columnID = i / 2;
+
+                    int h = CalculateColumnHeight(values, columnID, maxValue, maxOrdinate, chartHeight);
                     int y = chartHeight - h;
 
-                    chartDrawerGraphics.FillRectangle(brush, (int)x, y, (int)w, h);
+                    Rectangle r = new Rectangle((int)x, y, (int)w, h);
+                    chartDrawerGraphics.FillRectangle(selectedColumnID == columnID ? selectionBrush : brush, r);
+                    
+                    Rectangle hitbox = new Rectangle();
+                    hitbox.Height = chartHeight;
+                    hitbox.Y = 0;
+                    hitbox.X = (int)(columnID > 0 ? x - gapWidth * 0.5 : x);
+                    hitbox.Width = (int)(columnWidth + ((columnID > 0 ? 0.5 : 0.0) + (columnID < values.Count - 1 ? 0.5 : 0.0)) * gapWidth) + 1;
+
+                    chartColumns.Add(hitbox);
                 }
 
                 x += w;
             }
 
             brush.Dispose();
+            selectionBrush.Dispose();
 
             UpdateChart();
         }
@@ -732,7 +755,7 @@ namespace Graphs_Framework
             {
                 switch (selectedChartType)
                 {
-                    case Chart.Types.Node: bChart1.BackColor = mainColor; break;
+                    case Chart.Types.Node: bChart1.BackColor = Colors.main; break;
                     case Chart.Types.Degree: bChart2.BackColor = Colors.blue; break;
                     case Chart.Types.AverageDegree: bChart3.BackColor = Colors.orange; break;
                 }
@@ -831,6 +854,24 @@ namespace Graphs_Framework
 
         }
 
+        private bool isInsideRect(Double2 pos, Rectangle rect)
+        {
+            return rect.X <= pos.X && pos.X < rect.X + rect.Width
+                && rect.Y <= pos.Y && pos.Y < rect.Y + rect.Height;
+        }
+
+        private int GetSelectedColumnID(Double2 mouse)
+        {
+            if (chartColumns == null) return -1;
+
+            for (int i = 0; i < chartColumns.Count; i++)
+            {
+                if (isInsideRect(mouse, chartColumns[i])) return i;
+            }
+
+            return -1;
+        }
+
         private int GetSelectedNodeID(Double2 mouse)
         {
             if (scaledPoints == null || scaledPoints.Count == 0) return -1;
@@ -857,13 +898,11 @@ namespace Graphs_Framework
         private void panelGraph_MouseEnter(object sender, EventArgs e)
         {
             hoveredPanel = Panels.Graph;
-            graphHovered = true;
         }
 
         private void panelGraph_MouseMove(object sender, MouseEventArgs e)
         {
             hoveredPanel = Panels.Graph;
-            graphHovered = true;
             mousePos = e.Location;
             selectedNodeID = GetSelectedNodeID(e.Location);
 
@@ -881,8 +920,13 @@ namespace Graphs_Framework
         private void panelGraph_MouseLeave(object sender, EventArgs e)
         {
             hoveredPanel = Panels.None;
-            graphHovered = false;
+            mouseBtnDown = MouseButtons.None;
             selectedNodeID = -1;
+
+            if (!generateSamples && (!forceDirectedArrangement || mouseBtnDown != MouseButtons.None && selectedNodeID >= 0))
+            {
+                DrawGraph(false);
+            }
         }
 
         private void panelGraph_MouseDown(object sender, MouseEventArgs e)
@@ -944,11 +988,24 @@ namespace Graphs_Framework
         private void panelChart_MouseMove(object sender, MouseEventArgs e)
         {
             hoveredPanel = Panels.Chart;
+            selectedColumnID = GetSelectedColumnID(e.Location);
+
+            if (!generateSamples && !forceDirectedArrangement)
+            {
+                DrawChart();
+            }
         }
         
         private void panelChart_MouseLeave(object sender, EventArgs e)
         {
             hoveredPanel = Panels.None;
+            mouseBtnDown = MouseButtons.None;
+            selectedColumnID = -1;
+
+            if (!generateSamples && !forceDirectedArrangement)
+            {
+                DrawChart();
+            }
         }        
         
         private void panelChart_MouseDown(object sender, MouseEventArgs e)

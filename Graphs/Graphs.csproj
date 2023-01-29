@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Chart.cs" />
+    <Compile Include="Colors.cs" />
     <Compile Include="Double2.cs" />
     <Compile Include="DoubleBufferedPanel.cs">
       <SubType>Component</SubType>
