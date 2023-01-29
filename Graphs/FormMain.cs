@@ -46,14 +46,6 @@ namespace Graphs_Framework
         int selectedNodeID = -1;
         Double2 selectedNodeOrigin;
 
-        Color yellow = Color.FromArgb(255, 189, 0);
-        Color blue = Color.FromArgb(0, 120, 215);
-        Color background = Color.FromArgb(50, 50, 50);
-        Color foreground = Color.FromArgb(80, 80, 80);
-        Color green = Color.FromArgb(8, 229, 129);
-        Color orange = Color.FromArgb(255, 123, 13);
-        Color darkGrey = Color.FromArgb(30, 30, 30);
-        Color selectionColor = Color.FromArgb(255, 255, 255);
         Color mainColor;
 
         Bitmap bmGraph;
@@ -92,7 +84,7 @@ namespace Graphs_Framework
             timer.Enabled = true;
             timer.Interval = 1;
 
-            mainColor = yellow;
+            mainColor = Colors.yellow;
 
             scaledPoints = new List<Double2>();
 
@@ -211,10 +203,10 @@ namespace Graphs_Framework
 
             switch (graphType) {
                 case Graph.Types.Random:
-                    mainColor = yellow;
+                    mainColor = Colors.yellow;
                     break;
                 case Graph.Types.Popularity:
-                    mainColor = green;
+                    mainColor = Colors.green;
                     break;
             }
 
@@ -245,7 +237,7 @@ namespace Graphs_Framework
             //CompositingMode oldCMForGPD = graphPanelDrawerGraphics.CompositingMode;
 
             graphPanelDrawerGraphics.CompositingMode = CompositingMode.SourceCopy;
-            graphPanelDrawerGraphics.Clear(background);
+            graphPanelDrawerGraphics.Clear(Colors.background);
             graphPanelDrawerGraphics.DrawImage(bmGraph, bmGraphPanel.Width / 2 - bmGraph.Width / 2, bmGraphPanel.Height / 2 - bmGraph.Height / 2);
             graphPanelGraphics.DrawImage(bmGraphPanel, 0, 0);
 
@@ -348,11 +340,11 @@ namespace Graphs_Framework
 
             Font font = new Font(FONT, 10);
             SolidBrush brush = new SolidBrush(mainColor);
-            SolidBrush selectionBrush = new SolidBrush(selectionColor);
+            SolidBrush selectionBrush = new SolidBrush(Colors.selection);
             Pen pen = new Pen(mainColor);
-            Pen sPen = new Pen(selectionColor);
+            Pen sPen = new Pen(Colors.selection);
 
-            graphDrawerGraphics.Clear(background);
+            graphDrawerGraphics.Clear(Colors.background);
 
             int radius = Math.Min(bmGraph.Width, bmGraph.Height) / 2 - 22;
             
@@ -453,7 +445,7 @@ namespace Graphs_Framework
             if (gm.Graph == null) return;
             if (gm.Graph.NeighbourMatrix == null) return;
 
-            chartDrawerGraphics.Clear(background);
+            chartDrawerGraphics.Clear(Colors.background);
 
             if (!showChart)
             {
@@ -484,8 +476,8 @@ namespace Graphs_Framework
             switch (selectedChartType)
             {
                 case Chart.Types.Node: brush = new SolidBrush(mainColor); break;
-                case Chart.Types.Degree: brush = new SolidBrush(blue); break;
-                case Chart.Types.AverageDegree: brush = new SolidBrush(orange); break;
+                case Chart.Types.Degree: brush = new SolidBrush(Colors.blue); break;
+                case Chart.Types.AverageDegree: brush = new SolidBrush(Colors.orange); break;
             }
 
             int horizontalOffset = 0;
@@ -511,7 +503,7 @@ namespace Graphs_Framework
 
             if (showChartValues)
             {
-                Pen pen = new Pen(foreground);
+                Pen pen = new Pen(Colors.foreground);
                 Font font = new Font(FONT, 10);
                 float[] dashValues = { 4, 4 };
                 pen.DashPattern = dashValues;
@@ -723,17 +715,17 @@ namespace Graphs_Framework
 
         private void UpdateChartButtons()
         {
-            bChart1.BackColor = background;
-            bChart2.BackColor = background;
-            bChart3.BackColor = background;
+            bChart1.BackColor = Colors.background;
+            bChart2.BackColor = Colors.background;
+            bChart3.BackColor = Colors.background;
 
             if (showChart)
             {
                 switch (selectedChartType)
                 {
                     case Chart.Types.Node: bChart1.BackColor = mainColor; break;
-                    case Chart.Types.Degree: bChart2.BackColor = blue; break;
-                    case Chart.Types.AverageDegree: bChart3.BackColor = orange; break;
+                    case Chart.Types.Degree: bChart2.BackColor = Colors.blue; break;
+                    case Chart.Types.AverageDegree: bChart3.BackColor = Colors.orange; break;
                 }
             }
 
@@ -789,7 +781,7 @@ namespace Graphs_Framework
 
         Color getToggleButtonColor(bool value)
         {
-            return value ? blue : background;
+            return value ? Colors.blue : Colors.background;
         }
 
         private void Main_SizeChanged(object sender, EventArgs e)
