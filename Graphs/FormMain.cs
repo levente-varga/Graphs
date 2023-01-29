@@ -338,6 +338,11 @@ namespace Graphs_Framework
         {
             if (gm.Graph == null) return;
             if (gm.Graph.NeighbourMatrix == null) return;
+            if (bmGraph.Width <= GetGraphPadding() * 2 + 1)
+            {
+                //graphDrawerGraphics.Clear(Colors.background);
+                return;
+            }
 
             Font font = new Font(FONT, 10);
             SolidBrush brush = new SolidBrush(Colors.main);
