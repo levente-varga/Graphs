@@ -15,6 +15,14 @@ namespace Graphs_Framework
     {
         public static string VERSION = "2.0.0";
 
+        public enum Panels
+        {
+            None,
+            Graph,
+            Chart,
+        }
+
+        Panels hoveredPanel = Panels.None;
         Chart.Types selectedChartType = 0;
         Graph.Types selectedGraphType = 0;
 
@@ -43,6 +51,7 @@ namespace Graphs_Framework
         bool generateSamples = false;
 
         bool graphHovered = false;
+        int selectedColumnID = -1; 
         int selectedNodeID = -1;
         Double2 selectedNodeOrigin;
 
@@ -847,17 +856,13 @@ namespace Graphs_Framework
 
         private void panelGraph_MouseEnter(object sender, EventArgs e)
         {
+            hoveredPanel = Panels.Graph;
             graphHovered = true;
-        }
-
-        private void panelGraph_MouseLeave(object sender, EventArgs e)
-        {
-            graphHovered = false;
-            selectedNodeID = -1;
         }
 
         private void panelGraph_MouseMove(object sender, MouseEventArgs e)
         {
+            hoveredPanel = Panels.Graph;
             graphHovered = true;
             mousePos = e.Location;
             selectedNodeID = GetSelectedNodeID(e.Location);
@@ -871,6 +876,13 @@ namespace Graphs_Framework
             {
                 DrawGraph(false);
             }
+        }
+
+        private void panelGraph_MouseLeave(object sender, EventArgs e)
+        {
+            hoveredPanel = Panels.None;
+            graphHovered = false;
+            selectedNodeID = -1;
         }
 
         private void panelGraph_MouseDown(object sender, MouseEventArgs e)
@@ -920,6 +932,33 @@ namespace Graphs_Framework
                     }
                     break;
             }
+        }
+
+        
+
+        private void panelChart_MouseEnter(object sender, EventArgs e)
+        {
+            hoveredPanel = Panels.Chart;
+        }
+        
+        private void panelChart_MouseMove(object sender, MouseEventArgs e)
+        {
+            hoveredPanel = Panels.Chart;
+        }
+        
+        private void panelChart_MouseLeave(object sender, EventArgs e)
+        {
+            hoveredPanel = Panels.None;
+        }        
+        
+        private void panelChart_MouseDown(object sender, MouseEventArgs e)
+        {
+            mouseBtnDown = e.Button;
+        }
+
+        private void panelChart_MouseUp(object sender, MouseEventArgs e)
+        {
+            mouseBtnDown = MouseButtons.None;
         }
     }
 }

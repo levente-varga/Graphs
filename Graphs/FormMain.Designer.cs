@@ -90,6 +90,11 @@ namespace Graphs_Framework
             this.panelChart.Name = "panelChart";
             this.panelChart.Size = new System.Drawing.Size(530, 200);
             this.panelChart.TabIndex = 9;
+            this.panelChart.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelChart_MouseDown);
+            this.panelChart.MouseEnter += new System.EventHandler(this.panelChart_MouseEnter);
+            this.panelChart.MouseLeave += new System.EventHandler(this.panelChart_MouseLeave);
+            this.panelChart.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelChart_MouseMove);
+            this.panelChart.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelChart_MouseUp);
             // 
             // bChart1
             // 
