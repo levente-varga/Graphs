@@ -548,6 +548,13 @@ namespace Graphs_Framework
                         if (i % 2 == 0)
                         {
                             int column = i / 2;
+
+                            if (values.Count >= 30 && column == values.Count - 1)
+                            {
+                                // This text would not fit entirely inside the panel if displayed, so do not draw it
+                                break;
+                            }
+
                             if (column % (int)Math.Sqrt(values.Count) == 0)
                             {
                                 chartDrawerGraphics.DrawString(
