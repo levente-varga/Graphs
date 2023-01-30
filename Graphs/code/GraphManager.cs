@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms.VisualStyles;
 
-namespace Graphs_Framework 
+namespace Graphs_Framework
 {
     public class GraphManager 
     {

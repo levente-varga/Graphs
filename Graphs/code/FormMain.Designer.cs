@@ -342,7 +342,7 @@ namespace Graphs_Framework
             this.lValueOfPower.Name = "lValueOfPower";
             this.lValueOfPower.Size = new System.Drawing.Size(35, 18);
             this.lValueOfPower.TabIndex = 3;
-            this.lValueOfPower.Text = "1.0";
+            this.lValueOfPower.Text = "1.00";
             this.lValueOfPower.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.lValueOfPower.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lValueOfPower_KeyDown);
             // 
