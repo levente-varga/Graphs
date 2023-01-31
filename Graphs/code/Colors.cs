@@ -16,7 +16,7 @@ namespace Graphs_Framework
         public static Color green = Color.FromArgb(8, 229, 129);
         public static Color orange = Color.FromArgb(255, 123, 13);
         public static Color darkGrey = Color.FromArgb(30, 30, 30);
-        public static Color selection = Color.FromArgb(255, 255, 255);
+        public static Color highlight = Color.FromArgb(255, 255, 255);
         public static Color main = yellow;
 
         public static void UpdateMainColor(Graph.Types selectedGraphType)
