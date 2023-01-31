@@ -40,8 +40,6 @@ namespace Graphs_Framework
 
         int selectedNodeID = -1;
         int selectedColumnID = -1; 
-        List<int> highlightedNodeIDs = new List<int>();
-        List<int> highlightedColumnIDs = new List<int>();
         Double2 selectedNodeOrigin;
 
         List<Rectangle> chartColumnsHitboxes = new List<Rectangle>();
@@ -279,8 +277,7 @@ namespace Graphs_Framework
                     selectedNodeID = GetSelectedNodeID(mousePosition);
                 }
 
-                DrawGraph();
-                DrawChart();
+                DrawGraphicalUI();
             }
         }
 
@@ -306,8 +303,13 @@ namespace Graphs_Framework
             SetupGraphics();
             UpdateChartButtons();
             FillStatistics();
+            DrawGraphicalUI();
+        }
+
+        private void DrawGraphicalUI(bool scaleGraph = true)
+        {
             DrawChart();
-            DrawGraph();
+            DrawGraph(scaleGraph);
         }
 
         private void UpdateUI()
@@ -418,6 +420,9 @@ namespace Graphs_Framework
             }
         }
 
+        private bool IsNodeHighlighted(int nodeID, List<int> highlightedNodeIDs) => nodeID == selectedNodeID || highlightedNodeIDs.Contains(nodeID);
+        private bool IsColumnHighlighted(int columnID, List<int> highlightedColumnIDs) => columnID == selectedColumnID || highlightedColumnIDs.Contains(columnID);
+
         public void DrawGraph(bool scaleGraph = true)
         {
             if (graphManager.Graph == null) return;
@@ -428,7 +433,7 @@ namespace Graphs_Framework
             SolidBrush brush = new SolidBrush(Colors.main);
             SolidBrush highlightBrush = new SolidBrush(Colors.highlight);
             Pen pen = new Pen(Colors.main);
-            Pen sPen = new Pen(Colors.highlight);
+            Pen highlightPen = new Pen(Colors.highlight);
 
             graphDrawerGraphics.Clear(Colors.background);
 
@@ -439,51 +444,55 @@ namespace Graphs_Framework
                 scaledPoints = new List<Double2>(graphManager.Points);
                 FitToCanvas(scaledPoints, GetGraphPadding(), Options.forceDirectedArrangement && !Options.generateSamples);
             }
+
+            List<int> highlightedNodeIDs = GetHighlightedNodeIDs(GetChartValues());
             
-            // Text
+            // Draw texts
             if (Options.showDegree && (!Options.forceDirectedArrangement || Options.generateSamples))
             {
                 List<Double2> textPositions = graphManager.GetCircularArrangement(graphManager.Graph.NodeCount, radius + 15, new Double2(textureGraph.Width / 2, textureGraph.Height / 2));
                 FitToCanvas(textPositions, 7, Options.forceDirectedArrangement && !Options.generateSamples);
                 for (int i = 0; i < graphManager.Graph.NodeCount; i++)
                 {
-                    graphDrawerGraphics.DrawString(graphManager.Graph.CalculateDegree(i).ToString(), font, brush, 
+                    bool isHighlighted = IsNodeHighlighted(i, highlightedNodeIDs);
+                    graphDrawerGraphics.DrawString(graphManager.Graph.CalculateDegree(i).ToString(), font, isHighlighted ? highlightBrush : brush, 
                         (int)textPositions[i].X - (graphManager.Graph.CalculateDegree(i) < 10 ? 5 : 9), 
                         (int)textPositions[i].Y - 8);
                 }
             }
 
-            // Edges
-            for (int i = 0; i < scaledPoints.Count - 1; i++)
+            // Draw edges
+            for (int nodeA = 0; nodeA < scaledPoints.Count - 1; nodeA++)
             {
-                for (int j = i + 1; j < scaledPoints.Count; j++)
+                for (int nodeB = nodeA + 1; nodeB < scaledPoints.Count; nodeB++)
                 {
                     try
                     {
-                        if (graphManager.Graph.NeighbourMatrix[i][j])
+                        if (graphManager.Graph.NeighbourMatrix[nodeA][nodeB])
                         {
-                            int posX1 = (int)scaledPoints[i].X;
-                            int posY1 = (int)scaledPoints[i].Y;
-                            int posX2 = (int)scaledPoints[j].X;
-                            int posY2 = (int)scaledPoints[j].Y;
+                            Point positionA = new Point((int)scaledPoints[nodeA].X, (int)scaledPoints[nodeA].Y);
+                            Point positionB = new Point((int)scaledPoints[nodeB].X, (int)scaledPoints[nodeB].Y);
+
+                            bool isNodeAHighlighted = IsNodeHighlighted(nodeA, highlightedNodeIDs);
+                            bool isNodeBHighlighted = IsNodeHighlighted(nodeB, highlightedNodeIDs);
 
                             LinearGradientBrush gradBrush = new LinearGradientBrush(
-                                new Point(posX1 + (posX2 > posX1 ? -1 :  1), posY1 + (posY2 > posY1 ? -1 :  1)),
-                                new Point(posX2 + (posX2 > posX1 ?  1 : -1), posY2 + (posY2 > posY1 ?  1 : -1)),
+                                new Point(positionA.X + (positionB.X > positionA.X ? -1 :  1), positionA.Y + (positionB.Y > positionA.Y ? -1 :  1)),
+                                new Point(positionB.X + (positionB.X > positionA.X ?  1 : -1), positionB.Y + (positionB.Y > positionA.Y ?  1 : -1)),
                                 Color.FromArgb(
-                                    Options.gradient ? (int)(255.0 * Math.Pow((double)graphManager.Graph.CalculateDegree(i) / graphManager.Graph.MaxDegree, 2.5)) : 255, 
-                                    i == selectedNodeID ? sPen.Color.R : pen.Color.R,
-                                    i == selectedNodeID ? sPen.Color.G : pen.Color.G,
-                                    i == selectedNodeID ? sPen.Color.B : pen.Color.B),
+                                    Options.gradient ? (int)(255.0 * Math.Pow((double)graphManager.Graph.CalculateDegree(nodeA) / graphManager.Graph.MaxDegree, 2.5)) : 255,
+                                    isNodeAHighlighted ? highlightPen.Color.R : pen.Color.R,
+                                    isNodeAHighlighted ? highlightPen.Color.G : pen.Color.G,
+                                    isNodeAHighlighted ? highlightPen.Color.B : pen.Color.B),
                                 Color.FromArgb(
-                                    Options.gradient ? (int)(255.0 * Math.Pow((double)graphManager.Graph.CalculateDegree(j) / graphManager.Graph.MaxDegree, 2.5)) : 255, 
-                                    j == selectedNodeID ? sPen.Color.R : pen.Color.R, 
-                                    j == selectedNodeID ? sPen.Color.G : pen.Color.G, 
-                                    j == selectedNodeID ? sPen.Color.B : pen.Color.B)
+                                    Options.gradient ? (int)(255.0 * Math.Pow((double)graphManager.Graph.CalculateDegree(nodeB) / graphManager.Graph.MaxDegree, 2.5)) : 255,
+                                    isNodeBHighlighted ? highlightPen.Color.R : pen.Color.R,
+                                    isNodeBHighlighted ? highlightPen.Color.G : pen.Color.G,
+                                    isNodeBHighlighted ? highlightPen.Color.B : pen.Color.B)
                                 );
                             Pen gradPen = new Pen(gradBrush);
 
-                            graphDrawerGraphics.DrawLine(gradPen, posX1, posY1, posX2, posY2);
+                            graphDrawerGraphics.DrawLine(gradPen, positionA.X, positionA.Y, positionB.X, positionB.Y);
 
                             gradPen.Dispose();
                             gradBrush.Dispose();
@@ -492,12 +501,12 @@ namespace Graphs_Framework
                     catch
                     {
                         if (graphManager.Graph.NeighbourMatrix.Count == 0) Debug.WriteLine("Neighbour Matrix is empty");
-                        Debug.WriteLine($"i: {i}, j: {j}, size: {graphManager.Graph.NeighbourMatrix.Count}x{graphManager.Graph.NeighbourMatrix[0].Count}");
+                        Debug.WriteLine($"i: {nodeA}, j: {nodeB}, size: {graphManager.Graph.NeighbourMatrix.Count}x{graphManager.Graph.NeighbourMatrix[0].Count}");
                     }
                 }
             }
 
-            // Nodes
+            // Draw nodes
             if (Options.showNodes)
             {
                 for (int i = 0; i < scaledPoints.Count; i++)
@@ -507,8 +516,8 @@ namespace Graphs_Framework
                     int posX = (int)scaledPoints[i].X - NODE_SIZE / 2;
                     int posY = (int)scaledPoints[i].Y - NODE_SIZE / 2;
 
-                    bool highlighted = selectedNodeID == i || highlightedNodeIDs.Contains(i);
-                    graphDrawerGraphics.FillEllipse(highlighted ? highlightBrush : brush, new Rectangle(posX, posY, NODE_SIZE, NODE_SIZE));
+                    bool isHighlighted = IsNodeHighlighted(i, highlightedNodeIDs);
+                    graphDrawerGraphics.FillEllipse(isHighlighted ? highlightBrush : brush, new Rectangle(posX, posY, NODE_SIZE, NODE_SIZE));
                 }
             }
 
@@ -532,6 +541,84 @@ namespace Graphs_Framework
             return (int)(values[index] / (Options.stretchChart ? maxValue : maxOrdinate) * chartHeight);
         }
 
+        private List<int> GetHighlightedNodeIDs(List<double> values)
+        {
+            List<int> highlightedNodeIDs = new List<int>();
+            if (selectedColumnID >= 0)
+            {
+                switch (selectedChartType)
+                {
+                    case Chart.Types.Node:
+                        highlightedNodeIDs.Add(selectedColumnID);
+                        break;
+                    case Chart.Types.Degree:
+                        for (int i = 0; i < graphManager.Graph.NodeCount; i++)
+                        {
+                            if (graphManager.Graph.CalculateDegree(i) == selectedColumnID)
+                            {
+                                highlightedNodeIDs.Add(i);
+                            }
+                        }
+                        break;
+                    case Chart.Types.AverageDegree:
+                        for (int i = 0; i < graphManager.Graph.NodeCount; i++)
+                        {
+                            if (graphManager.Graph.CalculateDegree(i) == selectedColumnID)
+                            {
+                                highlightedNodeIDs.Add(i);
+                            }
+                        }
+                        break;
+                }
+            }
+            return highlightedNodeIDs;
+        }
+
+        private List<int> GetHighlightedColumnIDs(List<double> values)
+        {
+            List<int> highlightedColumnIDs = new List<int>();
+            if (selectedNodeID >= 0)
+            {
+                switch (selectedChartType)
+                {
+                    case Chart.Types.Node:
+                        highlightedColumnIDs.Add(selectedNodeID);
+                        break;
+                    case Chart.Types.Degree:
+                        highlightedColumnIDs.Add(graphManager.Graph.CalculateDegree(selectedNodeID));
+                        break;
+                    case Chart.Types.AverageDegree:
+                        highlightedColumnIDs.Add(graphManager.Graph.CalculateDegree(selectedNodeID));
+                        break;
+                }
+            }
+            return highlightedColumnIDs;
+        }
+
+        private List<double> GetChartValues()
+        {
+            List<double> values = new List<double>();
+            switch (selectedChartType)
+            {
+                case Chart.Types.Node: values = GetDegreeList(); break;
+                case Chart.Types.Degree: values = GetDegreeDistibution(); break;
+                case Chart.Types.AverageDegree: values = GetAverageDegreeDistribution(); break;
+            }
+            return values;
+        }
+
+        private int GetMaxOrdinate()
+        {
+            int maxOrdinate = 0;
+            switch (selectedChartType)
+            {
+                case Chart.Types.Node: maxOrdinate = graphManager.Graph.NodeCount - 1; break;
+                case Chart.Types.Degree: maxOrdinate = graphManager.Graph.NodeCount; break;
+                case Chart.Types.AverageDegree: maxOrdinate = graphManager.Graph.NodeCount; break;
+            }
+            return maxOrdinate;
+        }
+
         private void DrawChart()
         {
             if (graphManager.Graph == null) return;
@@ -545,15 +632,8 @@ namespace Graphs_Framework
                 return;
             }
 
-            List<double> values = null;
-            int maxOrdinate = 0;
-
-            switch (selectedChartType)
-            {
-                case Chart.Types.Node: values = GetNodeList(); maxOrdinate = graphManager.Graph.NodeCount - 1; break;
-                case Chart.Types.Degree: values = GetDegreeList(); maxOrdinate = graphManager.Graph.NodeCount; break;
-                case Chart.Types.AverageDegree: values = GetAverageDegreeList(); maxOrdinate = graphManager.Graph.NodeCount; break;
-            }
+            List<double> values = GetChartValues();
+            int maxOrdinate = GetMaxOrdinate();
 
             if (values == null || values.Count == 0)
             {
@@ -563,7 +643,7 @@ namespace Graphs_Framework
 
             if (Options.sortChart) values.Sort((double a, double b) => a > b ? -1 : 1);
 
-
+            List<int> highlightedColumnIDs = GetHighlightedColumnIDs(values);
             double maxValue = values.Max();
             double measuredValue = selectedColumnID >= 0 ? values[selectedColumnID] : maxValue;
             int maxValueColumnID = values.FindIndex((n) => n == maxValue);
@@ -603,7 +683,7 @@ namespace Graphs_Framework
             double columnWidth = (chartWidth * (columnFactor / totalWidth)) / values.Count;
             double gapWidth = (chartWidth * (gapFactor / totalWidth)) / (values.Count - 1);
 
-            // Values
+            // Draw values
 
             if (Options.showChartValues)
             {
@@ -633,20 +713,20 @@ namespace Graphs_Framework
 
                         if (i % 2 == 0)
                         {
-                            int column = i / 2;
+                            int columnID = i / 2;
 
-                            if (values.Count >= 30 && column == values.Count - 1)
+                            if (values.Count >= 30 && columnID == values.Count - 1)
                             {
                                 // This text would not fit entirely inside the panel if displayed, so do not draw it
                                 break;
                             }
 
-                            if (column % (int)Math.Sqrt(values.Count) == 0)
+                            if (columnID % (int)Math.Sqrt(values.Count) == 0)
                             {
                                 chartDrawerGraphics.DrawString(
-                                    column.ToString(), 
+                                    columnID.ToString(), 
                                     font, brush,
-                                    (int)(textX + columnWidth / 2 - (column < 10 ? 5 : 9.5)), 
+                                    (int)(textX + columnWidth / 2 - (columnID < 10 ? 5 : 9.5)), 
                                     chartHeight + 1);
                             }
                         }
@@ -659,7 +739,7 @@ namespace Graphs_Framework
                 pen.Dispose();
             }
 
-            // Columns
+            // Draw columns
 
             chartColumnsHitboxes.Clear();
             double x = startX;
@@ -674,9 +754,9 @@ namespace Graphs_Framework
                     int height = CalculateColumnHeight(values, columnID, maxValue, maxOrdinate, chartHeight);
                     int y = chartHeight - height;
 
-                    bool highlighted = selectedColumnID == columnID || highlightedColumnIDs.Contains(columnID);
+                    bool isHighlighted = IsColumnHighlighted(columnID, highlightedColumnIDs);
                     Rectangle rectangle = new Rectangle((int)x, y, (int)width, height);
-                    chartDrawerGraphics.FillRectangle(highlighted ? highlightBrush : brush, rectangle);
+                    chartDrawerGraphics.FillRectangle(isHighlighted ? highlightBrush : brush, rectangle);
                     
                     Rectangle hitbox = new Rectangle();
                     hitbox.Height = panelChart.Height - 1;
@@ -696,7 +776,7 @@ namespace Graphs_Framework
             UpdateChart();
         }
 
-        private List<double> GetNodeList()
+        private List<double> GetDegreeList()
         {
             List<double> degrees = new List<double>();
             for (int i = 0; i < graphManager.Graph.NodeCount; i++)
@@ -705,19 +785,19 @@ namespace Graphs_Framework
             return degrees;
         }
 
-        private List<double> GetDegreeList()
+        private List<double> GetDegreeDistibution()
         {
-            List<double> counts = new List<double>(new double[graphManager.Graph.NodeCount]);
+            List<double> degreeList = new List<double>(new double[graphManager.Graph.NodeCount]);
             for (int i = 0; i < graphManager.Graph.NodeCount; i++)
             {
                 int degree = graphManager.Graph.CalculateDegree(i);
-                counts[degree]++;
+                degreeList[degree]++;
             }
 
-            return counts;
+            return degreeList;
         }
 
-        private List<double> GetAverageDegreeList()
+        private List<double> GetAverageDegreeDistribution()
         {
             return graphManager.AverageDegreeDistribution;
         }
@@ -947,10 +1027,7 @@ namespace Graphs_Framework
                 scaledPoints[selectedNodeID] = mousePosition;
             }
 
-            if (!AutoDrawingIsOn())
-            {
-                DrawGraph(false);
-            }
+            if (!AutoDrawingIsOn()) DrawGraphicalUI(false);
         }
 
         private void panelGraph_MouseLeave(object sender, EventArgs e)
@@ -959,10 +1036,7 @@ namespace Graphs_Framework
             mouseButtonPressed = MouseButtons.None;
             selectedNodeID = -1;
 
-            if (!AutoDrawingIsOn())
-            {
-                DrawGraph(false);
-            }
+            if (!AutoDrawingIsOn()) DrawGraphicalUI(false);
         }
 
         private void panelGraph_MouseDown(object sender, MouseEventArgs e)
@@ -1006,8 +1080,7 @@ namespace Graphs_Framework
                         graphManager.RemoveNode(selectedNodeID);
                         FillStatistics();
                         UpdateChart();
-                        DrawChart();
-                        DrawGraph();
+                        DrawGraphicalUI();
                         mouseButtonPressed = MouseButtons.None;
                     }
                     break;
@@ -1026,10 +1099,7 @@ namespace Graphs_Framework
             hoveredPanel = Panels.Chart;
             selectedColumnID = GetSelectedColumnID(e.Location);
 
-            if (!AutoDrawingIsOn())
-            {
-                DrawChart();
-            }
+            if (!AutoDrawingIsOn()) DrawGraphicalUI();
         }
         
         private void panelChart_MouseLeave(object sender, EventArgs e)
@@ -1038,10 +1108,7 @@ namespace Graphs_Framework
             mouseButtonPressed = MouseButtons.None;
             selectedColumnID = -1;
 
-            if (!AutoDrawingIsOn())
-            {
-                DrawChart();
-            }
+            if (!AutoDrawingIsOn()) DrawGraphicalUI();
         }        
         
         private void panelChart_MouseDown(object sender, MouseEventArgs e)
