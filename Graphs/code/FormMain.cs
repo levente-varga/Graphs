@@ -55,7 +55,7 @@ namespace Graphs_Framework
         private static double CHART_COLUMN_GAP_RATIO = 0.6;
         private static int CHART_VERTICAL_VALUES_WIDTH = 20;
         private static int CHART_HORIZONTAL_VALUES_HEIGHT = 17;
-        private static int NODE_SIZE = 100;
+        private static int NODE_SIZE = 8;
 
         private const int NODE_COUNT_MAX = 100;
         private const int NODE_COUNT_MIN = 3;
