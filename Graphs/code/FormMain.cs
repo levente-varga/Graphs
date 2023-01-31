@@ -723,9 +723,10 @@ namespace Graphs_Framework
 
                             if (columnID % (int)Math.Sqrt(values.Count) == 0)
                             {
+                                bool isHighlighted = IsColumnHighlighted(columnID, highlightedColumnIDs);
                                 chartDrawerGraphics.DrawString(
                                     columnID.ToString(), 
-                                    font, brush,
+                                    font, isHighlighted ? highlightBrush : brush,
                                     (int)(textX + columnWidth / 2 - (columnID < 10 ? 5 : 9.5)), 
                                     chartHeight + 1);
                             }
