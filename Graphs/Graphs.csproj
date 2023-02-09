@@ -51,9 +51,12 @@
   <ItemGroup>
     <Compile Include="code\Chart.cs" />
     <Compile Include="code\Colors.cs" />
+    <Compile Include="code\custom\ColoredTrackBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="code\Double2.cs" />
     <Compile Include="code\Options.cs" />
-    <Compile Include="DoubleBufferedPanel.cs">
+    <Compile Include="code\custom\DoubleBufferedPanel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="code\FormMain.cs">
@@ -93,6 +96,47 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Properties\Resources\pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\reset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\gradient.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\show_degrees.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\show_nodes.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\sort_chart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\stretch_chart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\show_chart_values.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\arrange.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\generate_samples.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\parameters.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\generate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Resources\reset_samples.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -48,6 +48,13 @@ namespace Graphs_Framework
             points = new List<Double2>();
         }
 
+        public void ResetDistributionSamples()
+        {
+            if (graph == null) return;
+            averageDegreeDistribution = new List<double>(new double[graph.NodeCount]);
+            sampleCount = 0;
+        }
+
         public void GenerateGraph(Graph.Types type, int nodes, double probability, double power)
         {
             prevGeneratedGraph = currGeneratedGraph;
@@ -56,9 +63,7 @@ namespace Graphs_Framework
 
             if (GraphParametersChanged())
             {
-                // start over counting the average degree distribution
-                averageDegreeDistribution = new List<double>(new double[graph.NodeCount]);
-                sampleCount = 0;
+                ResetDistributionSamples();
             }
 
             UpdateAverageDegreeDistribution();
@@ -134,7 +139,7 @@ namespace Graphs_Framework
         {
             if (graph == null) return;
 
-            double maxF = 0;
+            double maxForce = 0;
             double coolingFactor = 1;
             List<Double2> forces = new List<Double2>();
 
@@ -149,22 +154,19 @@ namespace Graphs_Framework
                     Double2 awayFromOther = points[other].DirectionTowards(points[node]);
                     double distance = points[node].DistanceFrom(points[other]);
 
-                    // Repulsive force
-                    Double2 repulsive = IDEAL_SPRING_LENGTH / Math.Pow(distance, 1.5) * awayFromOther;
-
-                    // Attractive (spring) force
-                    Double2 attractive = new Double2();
+                    Double2 repulsiveForce = IDEAL_SPRING_LENGTH / Math.Pow(distance, 1.5) * awayFromOther;
+                    Double2 attractiveForce = new Double2();
 
                     if (graph.HasEdge(node, other))
                     {
-                        attractive = distance / Math.Pow(IDEAL_SPRING_LENGTH, 1.5) * towardsOther;
+                        attractiveForce = distance / Math.Pow(IDEAL_SPRING_LENGTH, 1.5) * towardsOther;
                     }
 
-                    Double2 force = repulsive + attractive;
+                    Double2 totalForce = repulsiveForce + attractiveForce;
 
-                    if (force.Length() > maxF) maxF = force.Length();
+                    if (totalForce.Length() > maxForce) maxForce = totalForce.Length();
 
-                    forces[node] += force;
+                    forces[node] += totalForce;
                 }
             }
 

@@ -13,7 +13,7 @@ namespace Graphs_Framework
 {
     public partial class FormMain : Form
     {
-        public static string VERSION = "2.0.0";
+        public static string VERSION = "2.1.0";
 
         public enum Panels
         {
@@ -142,14 +142,14 @@ namespace Graphs_Framework
 
         private void SetupToggleButtons()
         {
-            bShowDegree.BackColor = getToggleButtonColor(Options.showDegree);
-            bShowNodes.BackColor = getToggleButtonColor(Options.showNodes);
-            bGradient.BackColor = getToggleButtonColor(Options.gradient);
-            bSort.BackColor = getToggleButtonColor(Options.sortChart);
-            bStretch.BackColor = getToggleButtonColor(Options.stretchChart);
-            bShowValues.BackColor = getToggleButtonColor(Options.showChartValues);
-            bArrangement.BackColor = getToggleButtonColor(Options.forceDirectedArrangement);
-            bGenerateSamples.BackColor = getToggleButtonColor(Options.generateSamples);
+            bShowDegree.BackColor = GetToggleButtonColor(Options.showDegree);
+            bShowNodes.BackColor = GetToggleButtonColor(Options.showNodes);
+            bGradient.BackColor = GetToggleButtonColor(Options.gradient);
+            bSort.BackColor = GetToggleButtonColor(Options.sortChart);
+            bStretch.BackColor = GetToggleButtonColor(Options.stretchChart);
+            bShowValues.BackColor = GetToggleButtonColor(Options.showChartValues);
+            bArrangement.BackColor = GetToggleButtonColor(Options.forceDirectedArrangement);
+            bGenerateSamples.BackColor = GetToggleButtonColor(Options.generateSamples);
         }
 
         public void SetProgressBarPercent(double p)
@@ -270,7 +270,10 @@ namespace Graphs_Framework
             {
                 if (DraggingNode()) return;
 
-                graphManager.AdvanceForceDirectedArrangement();
+                if (!Options.pauseForceDirectedArrangement)
+                {
+                    graphManager.AdvanceForceDirectedArrangement();
+                }
 
                 if (hoveredPanel == Panels.Graph)
                 {
@@ -312,7 +315,7 @@ namespace Graphs_Framework
             DrawGraph(scaleGraph);
         }
 
-        private void UpdateUI()
+        private void UpdateGraphicalUI()
         {
             UpdateGraph();
             UpdateChart();
@@ -538,7 +541,7 @@ namespace Graphs_Framework
 
         private int CalculateColumnHeight(List<double> values, int index, double maxValue, int maxOrdinate, int chartHeight)
         {
-            return (int)(values[index] / (Options.stretchChart ? maxValue : maxOrdinate) * chartHeight);
+            return (int)(values[index] / (Options.stretchChart ? Math.Max(maxValue, 1) : maxOrdinate) * chartHeight);
         }
 
         private List<int> GetHighlightedNodeIDs(List<double> values)
@@ -697,11 +700,10 @@ namespace Graphs_Framework
 
                 chartDrawerGraphics.DrawLine(pen, 0, linePosY, panelChart.Width, linePosY);
 
-                string tMeasuredValue;
-                if (measuredValue != RoundDouble(measuredValue, 0))
-                    tMeasuredValue = RoundDouble(measuredValue, 1).ToString("0.0");
-                else
-                    tMeasuredValue = RoundDouble(measuredValue, 0).ToString();
+                string tMeasuredValue = measuredValue != RoundDouble(measuredValue, 0)
+                    ? tMeasuredValue = RoundDouble(measuredValue, 1).ToString("0.0")
+                    : tMeasuredValue = RoundDouble(measuredValue, 0).ToString();
+
                 chartDrawerGraphics.DrawString(tMeasuredValue, font, brush, 0, chartHeight - linePosY > 17 ? linePosY : linePosY - 17);
 
                 if (!Options.sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree))
@@ -808,50 +810,72 @@ namespace Graphs_Framework
         private void bStretch_Click(object sender, EventArgs e)
         {
             Options.stretchChart = !Options.stretchChart;
-            bStretch.BackColor = getToggleButtonColor(Options.stretchChart);
+            bStretch.BackColor = GetToggleButtonColor(Options.stretchChart);
             DrawChart();
         }
 
         private void bGradient_Click(object sender, EventArgs e)
         {
             Options.gradient = !Options.gradient;
-            bGradient.BackColor = getToggleButtonColor(Options.gradient);
+            bGradient.BackColor = GetToggleButtonColor(Options.gradient);
             DrawGraph();
         }
 
         private void bShowDegree_Click(object sender, EventArgs e)
         {
             Options.showDegree = !Options.showDegree;
-            bShowDegree.BackColor = getToggleButtonColor(Options.showDegree);
+            bShowDegree.BackColor = GetToggleButtonColor(Options.showDegree);
             DrawGraph();
         }
 
         private void bSort_Click(object sender, EventArgs e)
         {
             Options.sortChart = !Options.sortChart;
-            bSort.BackColor = getToggleButtonColor(Options.sortChart);
+            bSort.BackColor = GetToggleButtonColor(Options.sortChart);
             DrawChart();
         }
 
         private void bShowNodes_Click(object sender, EventArgs e)
         {
             Options.showNodes = !Options.showNodes;
-            bShowNodes.BackColor = getToggleButtonColor(Options.showNodes);
+            bShowNodes.BackColor = GetToggleButtonColor(Options.showNodes);
             DrawGraph();
         }
 
         private void bShowValues_Click(object sender, EventArgs e)
         {
             Options.showChartValues = !Options.showChartValues;
-            bShowValues.BackColor = getToggleButtonColor(Options.showChartValues);
+            bShowValues.BackColor = GetToggleButtonColor(Options.showChartValues);
             DrawChart();
         }
 
         private void bArrangement_Click(object sender, EventArgs e)
         {
             Options.forceDirectedArrangement = !Options.forceDirectedArrangement;
-            bArrangement.BackColor = getToggleButtonColor(Options.forceDirectedArrangement);
+            bArrangement.BackColor = GetToggleButtonColor(Options.forceDirectedArrangement);
+            bPauseArrangement.BackColor = GetToggleButtonColor(Options.forceDirectedArrangement);
+            bResetArrangement.BackColor = GetToggleButtonColor(Options.forceDirectedArrangement);
+            bPauseArrangement.BackgroundImage = Properties.Resources.pause;
+            Options.pauseForceDirectedArrangement = false;
             //timer.Enabled = forceDirectedArrangement;
+            ArrangePoints();
+            DrawGraph();
+        }
+
+        private void bPauseArrangement_Click(object sender, EventArgs e)
+        {
+            if (!Options.forceDirectedArrangement) return;
+
+            Options.pauseForceDirectedArrangement = !Options.pauseForceDirectedArrangement;
+
+            bPauseArrangement.BackColor = GetToggleButtonColor(!Options.pauseForceDirectedArrangement);
+            bPauseArrangement.BackgroundImage = Options.pauseForceDirectedArrangement
+                ? Properties.Resources.play
+                : Properties.Resources.pause;
+        }
+
+        private void bResetArrangement_Click(object sender, EventArgs e)
+        {
             ArrangePoints();
             DrawGraph();
         }
@@ -859,7 +883,7 @@ namespace Graphs_Framework
         private void bGenerateSamples_Click(object sender, EventArgs e)
         {
             Options.generateSamples = !Options.generateSamples;
-            bGenerateSamples.BackColor = getToggleButtonColor(Options.generateSamples);
+            bGenerateSamples.BackColor = GetToggleButtonColor(Options.generateSamples);
         }
 
         private void UpdateChartButtons()
@@ -928,9 +952,9 @@ namespace Graphs_Framework
             DrawChart();
         }
 
-        Color getToggleButtonColor(bool value)
+        Color GetToggleButtonColor(bool value)
         {
-            return value ? Colors.blue : Colors.background;
+            return value ? Colors.darkGrey : Colors.extrasBackground;
         }
 
         private void Main_SizeChanged(object sender, EventArgs e)
@@ -956,7 +980,7 @@ namespace Graphs_Framework
                 graphPanelGraphics = panelGraph.CreateGraphics();
                 graphPanelDrawerGraphics = Graphics.FromImage(textureGraphPanel);
 
-                UpdateUI();
+                UpdateGraphicalUI();
             }
         }
 
@@ -1124,5 +1148,12 @@ namespace Graphs_Framework
 
         private bool AutoDrawingIsOn() => Options.generateSamples || (Options.forceDirectedArrangement && !DraggingNode());
         private bool DraggingNode() => mouseButtonPressed == MouseButtons.Left && selectedNodeID >= 0;
+
+        private void bResetSamples_Click(object sender, EventArgs e)
+        {
+            graphManager.ResetDistributionSamples();
+            FillStatistics();
+            DrawChart();
+        }
     }
 }
