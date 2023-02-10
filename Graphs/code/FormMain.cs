@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows.Threading;
+using System.Runtime.Versioning;
 
 namespace Graphs_Framework
 {
+    [SupportedOSPlatform("windows")]
     public partial class FormMain : Form
     {
         public static string VERSION = "2.1.0";
@@ -72,7 +71,7 @@ namespace Graphs_Framework
 
         public FormMain()
         {
-            Console.WriteLine($"Version: {Environment.Version}");
+            Debug.WriteLine($"Version: {Environment.Version}");
 
             InitializeComponent();
             SetupGraphics();
@@ -95,17 +94,17 @@ namespace Graphs_Framework
         {
             //int graphSize = Math.Min(panelGraph.Width, panelGraph.Height);
 
-            if (graphPanelGraphics != null) graphPanelGraphics.Dispose();
-            if (chartPanelGraphics != null) chartPanelGraphics.Dispose();
-            if (graphDrawerGraphics != null) graphDrawerGraphics.Dispose();
-            if (chartDrawerGraphics != null) chartDrawerGraphics.Dispose();
-            if (graphPanelDrawerGraphics != null) graphPanelDrawerGraphics.Dispose();
-            if (textureChart != null) textureChart.Dispose();
+            graphPanelGraphics?.Dispose();
+            chartPanelGraphics?.Dispose();
+            graphDrawerGraphics?.Dispose();
+            chartDrawerGraphics?.Dispose();
+            graphPanelDrawerGraphics?.Dispose();
+            textureChart?.Dispose();
 
             if (panelGraph.Width > 0 && panelGraph.Height > 0)
             {
-                if (textureGraphPanel != null) textureGraphPanel.Dispose();
-                if (textureGraph != null) textureGraph.Dispose();
+                textureGraphPanel?.Dispose();
+                textureGraph?.Dispose();
                 textureGraphPanel = new Bitmap(panelGraph.Width, panelGraph.Height);
                 textureGraph = new Bitmap(panelGraph.Width, panelGraph.Height);//graphSize, graphSize);
             }
