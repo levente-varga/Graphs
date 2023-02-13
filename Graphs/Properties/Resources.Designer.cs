@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Graphs_Framework.Properties {
+namespace Graphs.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Graphs_Framework.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Graphs_Framework.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Graphs.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -196,6 +196,18 @@ namespace Graphs_Framework.Properties {
         internal static System.Drawing.Bitmap stretch_chart {
             get {
                 object obj = ResourceManager.GetObject("stretch_chart", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap auto_generate_on_change
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("auto_generate_on_change", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

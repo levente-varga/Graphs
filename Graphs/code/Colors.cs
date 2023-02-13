@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Graphs_Framework
+namespace Graphs
 {
     public static class Colors
     {
         public static Color yellow = Color.FromArgb(255, 189, 0);
         public static Color blue = Color.FromArgb(0, 120, 215);
+        public static Color red = Color.FromArgb(255, 85, 85);
         public static Color background = Color.FromArgb(50, 50, 50);
         public static Color extrasBackground = Color.FromArgb(65, 65, 65);
         public static Color foreground = Color.FromArgb(80, 80, 80);
@@ -21,17 +22,12 @@ namespace Graphs_Framework
         public static Color yellowAccent = Color.FromArgb(255, 204, 85);
         public static Color main = yellow;
 
-        public static void UpdateMainColor(Graph.Types selectedGraphType)
+        public static Color whiteText = Color.FromArgb(255, 255, 255);
+        public static Color blackText = Color.FromArgb(0, 0, 0);
+
+        public static void UpdateMainColor(Color color)
         {
-            switch (selectedGraphType)
-            {
-                case Graph.Types.Random:
-                    main = yellow;
-                    break;
-                case Graph.Types.Popularity:
-                    main = green;
-                    break;
-            }
+            main = color;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Graphs_Framework
+namespace Graphs
 {
     public class Double2
     {

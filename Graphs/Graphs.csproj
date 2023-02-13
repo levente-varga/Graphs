@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Graphs_Framework</RootNamespace>
-    <AssemblyName>Graphs Framework</AssemblyName>
+    <RootNamespace>Graphs</RootNamespace>
+    <AssemblyName>Graphs</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>

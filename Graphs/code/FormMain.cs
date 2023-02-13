@@ -6,8 +6,9 @@ using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Diagnostics;
 using System.Runtime.Versioning;
+using System.Windows.Forms.VisualStyles;
 
-namespace Graphs_Framework
+namespace Graphs
 {
     [SupportedOSPlatform("windows")]
     public partial class FormMain : Form
@@ -23,9 +24,12 @@ namespace Graphs_Framework
 
         Panels hoveredPanel = Panels.None;
         Chart.Types selectedChartType = 0;
-        Graph.Types selectedGraphType = 0;
 
-        private GraphManager graphManager = new GraphManager();
+        private GraphManager SelectedGraphManager { get { return graphManagers[selectedPage]; } }
+
+        int selectedPage = 0;
+        List<GraphManager> graphManagers = new List<GraphManager>();
+
         Graphics graphPanelGraphics;
         Graphics chartPanelGraphics;
         Graphics graphDrawerGraphics;
@@ -54,19 +58,6 @@ namespace Graphs_Framework
         private static int CHART_HORIZONTAL_VALUES_HEIGHT = 17;
         private static int NODE_SIZE = 8;
 
-        private const int NODE_COUNT_MAX = 100;
-        private const int NODE_COUNT_MIN = 3;
-        private const int NODE_COUNT_INIT = 13;
-        private const int NODE_COUNT_STEP = 1;
-        private const int PROBABILITY_MAX = 100;
-        private const int PROBABILITY_MIN = 0;
-        private const int PROBABILITY_INIT = 50;
-        private const int PROBABILITY_STEP = 1;
-        private const int POWER_MAX = 1000;
-        private const int POWER_MIN = 0;
-        private const int POWER_INIT = 100;
-        private const int POWER_STEP = 5;
-
         public static string FONT = "Segoe UI";
 
         public FormMain()
@@ -74,6 +65,7 @@ namespace Graphs_Framework
             Debug.WriteLine($"Version: {Environment.Version}");
 
             InitializeComponent();
+
             SetupGraphics();
             lVersion.Text = VERSION;
 
@@ -87,7 +79,26 @@ namespace Graphs_Framework
             Double2 p2 = new Double2(0, 0);
             lMaxF.Text = p1.Normalize().DistanceFrom(new Double2(0, 0)).ToString();
 
+            graphManagers.Add(new GraphManager(new ErdosRenyiGraph()));
+            graphManagers.Add(new GraphManager(new BarabasiAlbertGraph()));
+            graphManagers.Add(new GraphManager(new WattsStrogatzGraph()));
+
+            foreach (GraphManager manager in graphManagers) 
+            { 
+                manager.parameterChanged += GenerateGraph; 
+            }
+
+            SelectGraphPage(0);
+
             SetupUI();
+        }
+        
+        private void OnGenerateRequested()
+        {
+            if (Options.autoGenerateOnChange)
+            {
+                GenerateGraph();
+            }
         }
 
         private void SetupGraphics()
@@ -120,23 +131,7 @@ namespace Graphs_Framework
 
         private void SetupUI()
         {
-            SetupTrackBars();
             SetupToggleButtons();
-        }
-
-        private void SetupTrackBars()
-        {
-            trackBarNodes.Minimum = NODE_COUNT_MIN;
-            trackBarNodes.Maximum = (NODE_COUNT_MAX - NODE_COUNT_MIN) / NODE_COUNT_STEP + NODE_COUNT_MIN;
-            trackBarNodes.Value = Math.Max(Math.Min((NODE_COUNT_INIT - NODE_COUNT_MIN) / NODE_COUNT_STEP, trackBarNodes.Maximum), trackBarNodes.Minimum); ;
-
-            trackBarProbability.Minimum = PROBABILITY_MIN;
-            trackBarProbability.Maximum = (PROBABILITY_MAX - PROBABILITY_MIN) / PROBABILITY_STEP + PROBABILITY_MIN;
-            trackBarProbability.Value = Math.Max(Math.Min((PROBABILITY_INIT - PROBABILITY_MIN) / PROBABILITY_STEP, trackBarProbability.Maximum), trackBarProbability.Minimum);
-
-            trackBarPower.Minimum = POWER_MIN;
-            trackBarPower.Maximum = (POWER_MAX - POWER_MIN) / POWER_STEP + POWER_MIN;
-            trackBarPower.Value = Math.Max(Math.Min((POWER_INIT - POWER_MIN) / POWER_STEP, trackBarPower.Maximum), trackBarPower.Minimum);
         }
 
         private void SetupToggleButtons()
@@ -149,121 +144,16 @@ namespace Graphs_Framework
             bShowValues.BackColor = GetToggleButtonColor(Options.showChartValues);
             bArrangement.BackColor = GetToggleButtonColor(Options.forceDirectedArrangement);
             bGenerateSamples.BackColor = GetToggleButtonColor(Options.generateSamples);
+            bAutoGenerateOnChange.BackColor = GetToggleButtonColor(Options.autoGenerateOnChange);
         }
-
-        public void SetProgressBarPercent(double p)
-        {
-            if (p > 1) p = 1;
-            if (p < 0) p = 0;
-
-            pProgressBar.Width = (int) (p * panel1.Width);
-
-            pProgressBar.Refresh();
-        }
-
-        private int valueOfNodes() => (trackBarNodes.Minimum + (trackBarNodes.Value - trackBarNodes.Minimum) * NODE_COUNT_STEP) * 1;
-        private double valueOfProbability() => (trackBarProbability.Minimum + (trackBarProbability.Value - trackBarProbability.Minimum) * PROBABILITY_STEP) * 0.01;
-        private double valueOfPower() => (trackBarPower.Minimum + (trackBarPower.Value - trackBarPower.Minimum) * POWER_STEP) * 0.01;
-
-        private void trackBarNodes_Scroll(object sender, EventArgs e)
-        {
-            int nodes = valueOfNodes();
-            lValueOfNodes.Text = nodes.ToString();
-            lValueOfNodes.Update();
-        }
-
-        private void trackBarProbability_Scroll(object sender, EventArgs e)
-        {
-            double probability = valueOfProbability();
-            lValueOfProbability.Text = probability.ToString("0.00");
-            lValueOfProbability.Update();
-        }
-
-        private void trackBarPower_Scroll(object sender, EventArgs e)
-        {
-            double power = valueOfPower();
-            lValueOfPower.Text = power.ToString("0.00");
-            lValueOfPower.Update();
-        }
-
-        private void lValueOfNodes_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                try
-                {
-                    int enteredValue = Int32.Parse(lValueOfNodes.Text.ToString());
-                    int cappedValue = Math.Max(Math.Min(enteredValue, NODE_COUNT_MAX), NODE_COUNT_MIN);
-                    int convertedValue = (cappedValue - NODE_COUNT_MIN) / NODE_COUNT_STEP + NODE_COUNT_MIN;
-
-                    trackBarNodes.Value = convertedValue;
-                    lValueOfNodes.Text = cappedValue.ToString();
-                    bRandom.Focus();
-                }
-                catch (FormatException)
-                {
-                    lValueOfNodes.Text = valueOfNodes().ToString();
-                }
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-            }
-        }
-
-        private void lValueOfProbability_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                try
-                {
-                    double enteredValue = 100 * Double.Parse(lValueOfProbability.Text.ToString());
-                    int cappedValue = Math.Max(Math.Min((int)enteredValue, PROBABILITY_MAX), PROBABILITY_MIN);
-                    int convertedValue = (cappedValue - PROBABILITY_MIN) / PROBABILITY_STEP + PROBABILITY_MIN;
-
-                    trackBarProbability.Value = convertedValue;
-                    lValueOfProbability.Text = (cappedValue / 100.0).ToString("0.00");
-                    bRandom.Focus();
-                }
-                catch (FormatException)
-                {
-                    lValueOfProbability.Text = valueOfProbability().ToString("0.00");
-                }
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-            }
-        }
-
-        private void lValueOfPower_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                try
-                {
-                    double enteredValue = 100 * Double.Parse(lValueOfPower.Text.ToString());
-                    int cappedValue = Math.Max(Math.Min((int)enteredValue, POWER_MAX), POWER_MIN);
-                    int convertedValue = (cappedValue - POWER_MIN) / POWER_STEP + POWER_MIN;
-
-                    trackBarPower.Value = convertedValue;
-                    lValueOfPower.Text = (cappedValue / 100.0).ToString("0.00");
-                    bRandom.Focus();
-                }
-                catch (FormatException)
-                {
-                    lValueOfPower.Text = valueOfPower().ToString("0.00");
-                }
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-            }
-        }
-
-
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if (graphManager.Graph == null) return;
+            if (SelectedGraphManager.Graph == null) return;
 
             if (Options.generateSamples)
             {
-                GenerateGraph(selectedGraphType);
+                GenerateGraph();
             } 
             else if (Options.forceDirectedArrangement)
             {
@@ -271,7 +161,7 @@ namespace Graphs_Framework
 
                 if (!Options.pauseForceDirectedArrangement)
                 {
-                    graphManager.AdvanceForceDirectedArrangement();
+                    SelectedGraphManager.AdvanceForceDirectedArrangement();
                 }
 
                 if (hoveredPanel == Panels.Graph)
@@ -284,17 +174,42 @@ namespace Graphs_Framework
         }
 
 
-
-        private void buttonGenRnd_Click(object sender, EventArgs e) => GenerateGraph(Graph.Types.Random);
-        private void buttonGenPop_Click(object sender, EventArgs e) => GenerateGraph(Graph.Types.Popularity);
-        private void GenerateGraph(Graph.Types graphType) 
+        private void SelectGraphPage(int pageNumber)
         {
-            if (graphType == Graph.Types.None) graphType = Graph.Types.Random;
-            graphManager.GenerateGraph(graphType, valueOfNodes(), valueOfProbability(), valueOfPower());
+            selectedPage = pageNumber;
+            scaledPoints.Clear();
+            Colors.UpdateMainColor(SelectedGraphManager.Graph.Theme());
+            UpdateTabButtons();
+            bGenerateGraph.BackColor = Colors.main;
+            bGenerateGraph.Update();
+            pProgressBar.BackColor = Colors.main;
+            pProgressBar.Update();
 
-            Colors.UpdateMainColor(graphType);
+            foreach (GraphManager graphManager in graphManagers)
+            {
+                graphManager.Graph.RemoveParameterEditorsFromControl(panelParameters);
+            }
 
-            selectedGraphType = graphType;
+            SelectedGraphManager.Graph.AddParameterEditorsToControl(panelParameters, new Point(30, 30));
+
+            DrawUI();
+        }
+
+        private void buttonTabErdosRenyi_Click(object sender, EventArgs e) => SelectGraphPage(0);
+        private void buttonTabBarabasiAlbert_Click(object sender, EventArgs e) => SelectGraphPage(1);
+        private void buttonTabWattsStrogatz_Click(object sender, EventArgs e) => SelectGraphPage(2);
+
+        private void bGenerateGraph_Click(object sender, EventArgs e)
+        {
+            GenerateGraph();
+        }
+
+        private void GenerateGraph() 
+        {
+            SelectedGraphManager.GenerateGraph();
+
+            Colors.UpdateMainColor(SelectedGraphManager.Graph.Theme());
+
             pProgressBar.BackColor = Colors.main;
             ArrangePoints();
             DrawUI();
@@ -341,39 +256,29 @@ namespace Graphs_Framework
 
         private void FillStatistics()
         {
-            if (graphManager.Graph == null) return;
+            if (SelectedGraphManager.Graph == null) return;
 
-            int maxEdgeCount = graphManager.Graph.NodeCount * (graphManager.Graph.NodeCount - 1) / 2;
-            lAverageDegreeValue.Text = graphManager.Graph.CalculateAverageDegree().ToString("0.00");
-            lAverageDegreeSamples.Text = graphManager.AverageSamples.ToString();
-            lEdgeCount.Text = graphManager.Graph.EdgeCount.ToString() + " / " + maxEdgeCount + "   [" + ((double)graphManager.Graph.EdgeCount / maxEdgeCount * 100).ToString("0.0") + "%]";
+            int maxEdgeCount = SelectedGraphManager.Graph.NodeCount * (SelectedGraphManager.Graph.NodeCount - 1) / 2;
+            lAverageDegreeValue.Text = SelectedGraphManager.Graph.CalculateAverageDegree().ToString("0.00");
+            lAverageDegreeSamples.Text = SelectedGraphManager.AverageSamples.ToString();
+            lEdgeCount.Text = SelectedGraphManager.Graph.EdgeCount.ToString() + " / " + maxEdgeCount + "   [" + ((double)SelectedGraphManager.Graph.EdgeCount / maxEdgeCount * 100).ToString("0.0") + "%]";
 
             lAverageDegreeSamples.Refresh();
             lAverageDegreeValue.Refresh();
             lEdgeCount.Refresh();
         }
 
-        private void DisableUI(bool disable) 
-        {
-            bArrangement.Enabled = !disable;
-            bRandom.Enabled = !disable;
-            bPopularity.Enabled = !disable;
-            bArrangement.Update();
-            bRandom.Update();
-            bPopularity.Update();
-        }
-
         private void ArrangePoints()
         {
-            if (graphManager.Graph == null) return;
-            if (graphManager.Graph.NeighbourMatrix == null) return;
+            if (SelectedGraphManager.Graph == null) return;
+            if (SelectedGraphManager.Graph.NeighbourMatrix == null) return;
 
             int radius = Math.Min(textureGraph.Width, textureGraph.Height) / 2 - 22;
-            graphManager.ArrangeInCircle(radius, new Double2(textureGraph.Width / 2, textureGraph.Height / 2));
+            SelectedGraphManager.ArrangeInCircle(radius, new Double2(textureGraph.Width / 2, textureGraph.Height / 2));
 
             if (Options.forceDirectedArrangement)
             {
-                graphManager.ResetForceDirectedArrangement();
+                SelectedGraphManager.ResetForceDirectedArrangement();
                 timer.Enabled = true;
                 timer.Start();
             }
@@ -389,7 +294,7 @@ namespace Graphs_Framework
 
             if (skipLonelyNodes)
             {
-                while (startFromIndex < nodes.Count && graphManager.Graph.CalculateDegree(startFromIndex) == 0)
+                while (startFromIndex < nodes.Count && SelectedGraphManager.Graph.CalculateDegree(startFromIndex) == 0)
                 {
                     startFromIndex++;
                 }
@@ -401,7 +306,7 @@ namespace Graphs_Framework
 
             for (int i = startFromIndex; i < nodes.Count; i++)
             {
-                if (skipLonelyNodes && graphManager.Graph.CalculateDegree(i) == 0) continue;
+                if (skipLonelyNodes && SelectedGraphManager.Graph.CalculateDegree(i) == 0) continue;
                 if (nodes[i].X < min.X) min.X = nodes[i].X;
                 if (nodes[i].Y < min.Y) min.Y = nodes[i].Y;
                 if (nodes[i].X > max.X) max.X = nodes[i].X;
@@ -427,9 +332,15 @@ namespace Graphs_Framework
 
         public void DrawGraph(bool scaleGraph = true)
         {
-            if (graphManager.Graph == null) return;
-            if (graphManager.Graph.NeighbourMatrix == null) return;
-            if (textureGraph.Width <= GetGraphPadding() * 2 + 1) return;
+            graphDrawerGraphics.Clear(Colors.background);
+
+            if (SelectedGraphManager.Graph == null
+                || SelectedGraphManager.Graph.NeighbourMatrix == null
+                || textureGraph.Width <= GetGraphPadding() * 2 + 1)
+            {
+                UpdateGraph();
+                return;
+            }
 
             Font font = new Font(FONT, 10);
             SolidBrush brush = new SolidBrush(Colors.main);
@@ -437,13 +348,11 @@ namespace Graphs_Framework
             Pen pen = new Pen(Colors.main);
             Pen highlightPen = new Pen(Colors.highlight);
 
-            graphDrawerGraphics.Clear(Colors.background);
-
             int radius = Math.Min(textureGraph.Width, textureGraph.Height) / 2 - 22;
             
             if (scaleGraph)
             {
-                scaledPoints = new List<Double2>(graphManager.Points);
+                scaledPoints = new List<Double2>(SelectedGraphManager.Points);
                 FitToCanvas(scaledPoints, GetGraphPadding(), Options.forceDirectedArrangement && !Options.generateSamples);
             }
 
@@ -452,13 +361,13 @@ namespace Graphs_Framework
             // Draw texts
             if (Options.showDegree && (!Options.forceDirectedArrangement || Options.generateSamples))
             {
-                List<Double2> textPositions = graphManager.GetCircularArrangement(graphManager.Graph.NodeCount, radius + 15, new Double2(textureGraph.Width / 2, textureGraph.Height / 2));
+                List<Double2> textPositions = SelectedGraphManager.GetCircularArrangement(SelectedGraphManager.Graph.NodeCount, radius + 15, new Double2(textureGraph.Width / 2, textureGraph.Height / 2));
                 FitToCanvas(textPositions, 7, Options.forceDirectedArrangement && !Options.generateSamples);
-                for (int i = 0; i < graphManager.Graph.NodeCount; i++)
+                for (int i = 0; i < SelectedGraphManager.Graph.NodeCount; i++)
                 {
                     bool isHighlighted = IsNodeHighlighted(i, highlightedNodeIDs);
-                    graphDrawerGraphics.DrawString(graphManager.Graph.CalculateDegree(i).ToString(), font, isHighlighted ? highlightBrush : brush, 
-                        (int)textPositions[i].X - (graphManager.Graph.CalculateDegree(i) < 10 ? 5 : 9), 
+                    graphDrawerGraphics.DrawString(SelectedGraphManager.Graph.CalculateDegree(i).ToString(), font, isHighlighted ? highlightBrush : brush, 
+                        (int)textPositions[i].X - (SelectedGraphManager.Graph.CalculateDegree(i) < 10 ? 5 : 9), 
                         (int)textPositions[i].Y - 8);
                 }
             }
@@ -470,7 +379,7 @@ namespace Graphs_Framework
                 {
                     try
                     {
-                        if (graphManager.Graph.NeighbourMatrix[nodeA][nodeB])
+                        if (SelectedGraphManager.Graph.NeighbourMatrix[nodeA][nodeB])
                         {
                             Point positionA = new Point((int)scaledPoints[nodeA].X, (int)scaledPoints[nodeA].Y);
                             Point positionB = new Point((int)scaledPoints[nodeB].X, (int)scaledPoints[nodeB].Y);
@@ -482,12 +391,12 @@ namespace Graphs_Framework
                                 new Point(positionA.X + (positionB.X > positionA.X ? -1 :  1), positionA.Y + (positionB.Y > positionA.Y ? -1 :  1)),
                                 new Point(positionB.X + (positionB.X > positionA.X ?  1 : -1), positionB.Y + (positionB.Y > positionA.Y ?  1 : -1)),
                                 Color.FromArgb(
-                                    Options.gradient ? (int)(255.0 * Math.Pow((double)graphManager.Graph.CalculateDegree(nodeA) / graphManager.Graph.MaxDegree, 2.5)) : 255,
+                                    Options.gradient ? (int)(255.0 * Math.Pow((double)SelectedGraphManager.Graph.CalculateDegree(nodeA) / SelectedGraphManager.Graph.MaxDegree, 2.5)) : 255,
                                     isNodeAHighlighted ? highlightPen.Color.R : pen.Color.R,
                                     isNodeAHighlighted ? highlightPen.Color.G : pen.Color.G,
                                     isNodeAHighlighted ? highlightPen.Color.B : pen.Color.B),
                                 Color.FromArgb(
-                                    Options.gradient ? (int)(255.0 * Math.Pow((double)graphManager.Graph.CalculateDegree(nodeB) / graphManager.Graph.MaxDegree, 2.5)) : 255,
+                                    Options.gradient ? (int)(255.0 * Math.Pow((double)SelectedGraphManager.Graph.CalculateDegree(nodeB) / SelectedGraphManager.Graph.MaxDegree, 2.5)) : 255,
                                     isNodeBHighlighted ? highlightPen.Color.R : pen.Color.R,
                                     isNodeBHighlighted ? highlightPen.Color.G : pen.Color.G,
                                     isNodeBHighlighted ? highlightPen.Color.B : pen.Color.B)
@@ -502,8 +411,8 @@ namespace Graphs_Framework
                     }
                     catch
                     {
-                        if (graphManager.Graph.NeighbourMatrix.Count == 0) Debug.WriteLine("Neighbour Matrix is empty");
-                        Debug.WriteLine($"i: {nodeA}, j: {nodeB}, size: {graphManager.Graph.NeighbourMatrix.Count}x{graphManager.Graph.NeighbourMatrix[0].Count}");
+                        if (SelectedGraphManager.Graph.NeighbourMatrix.Count == 0) Debug.WriteLine("Neighbour Matrix is empty");
+                        Debug.WriteLine($"i: {nodeA}, j: {nodeB}, size: {SelectedGraphManager.Graph.NeighbourMatrix.Count}x{SelectedGraphManager.Graph.NeighbourMatrix[0].Count}");
                     }
                 }
             }
@@ -513,7 +422,7 @@ namespace Graphs_Framework
             {
                 for (int i = 0; i < scaledPoints.Count; i++)
                 {
-                    if (Options.forceDirectedArrangement && !Options.generateSamples && graphManager.Graph.CalculateDegree(i) == 0) continue;
+                    if (Options.forceDirectedArrangement && !Options.generateSamples && SelectedGraphManager.Graph.CalculateDegree(i) == 0) continue;
 
                     int posX = (int)scaledPoints[i].X - NODE_SIZE / 2;
                     int posY = (int)scaledPoints[i].Y - NODE_SIZE / 2;
@@ -550,22 +459,22 @@ namespace Graphs_Framework
             {
                 switch (selectedChartType)
                 {
-                    case Chart.Types.Node:
+                    case Chart.Types.Degree:
                         highlightedNodeIDs.Add(selectedColumnID);
                         break;
-                    case Chart.Types.Degree:
-                        for (int i = 0; i < graphManager.Graph.NodeCount; i++)
+                    case Chart.Types.DegreeDistribution:
+                        for (int i = 0; i < SelectedGraphManager.Graph.NodeCount; i++)
                         {
-                            if (graphManager.Graph.CalculateDegree(i) == selectedColumnID)
+                            if (SelectedGraphManager.Graph.CalculateDegree(i) == selectedColumnID)
                             {
                                 highlightedNodeIDs.Add(i);
                             }
                         }
                         break;
-                    case Chart.Types.AverageDegree:
-                        for (int i = 0; i < graphManager.Graph.NodeCount; i++)
+                    case Chart.Types.AverageDegreeDistribution:
+                        for (int i = 0; i < SelectedGraphManager.Graph.NodeCount; i++)
                         {
-                            if (graphManager.Graph.CalculateDegree(i) == selectedColumnID)
+                            if (SelectedGraphManager.Graph.CalculateDegree(i) == selectedColumnID)
                             {
                                 highlightedNodeIDs.Add(i);
                             }
@@ -583,14 +492,14 @@ namespace Graphs_Framework
             {
                 switch (selectedChartType)
                 {
-                    case Chart.Types.Node:
+                    case Chart.Types.Degree:
                         highlightedColumnIDs.Add(selectedNodeID);
                         break;
-                    case Chart.Types.Degree:
-                        highlightedColumnIDs.Add(graphManager.Graph.CalculateDegree(selectedNodeID));
+                    case Chart.Types.DegreeDistribution:
+                        highlightedColumnIDs.Add(SelectedGraphManager.Graph.CalculateDegree(selectedNodeID));
                         break;
-                    case Chart.Types.AverageDegree:
-                        highlightedColumnIDs.Add(graphManager.Graph.CalculateDegree(selectedNodeID));
+                    case Chart.Types.AverageDegreeDistribution:
+                        highlightedColumnIDs.Add(SelectedGraphManager.Graph.CalculateDegree(selectedNodeID));
                         break;
                 }
             }
@@ -602,9 +511,9 @@ namespace Graphs_Framework
             List<double> values = new List<double>();
             switch (selectedChartType)
             {
-                case Chart.Types.Node: values = GetDegreeList(); break;
-                case Chart.Types.Degree: values = GetDegreeDistibution(); break;
-                case Chart.Types.AverageDegree: values = GetAverageDegreeDistribution(); break;
+                case Chart.Types.Degree: values = GetDegreeList(); break;
+                case Chart.Types.DegreeDistribution: values = GetDegreeDistibution(); break;
+                case Chart.Types.AverageDegreeDistribution: values = GetAverageDegreeDistribution(); break;
             }
             return values;
         }
@@ -614,21 +523,20 @@ namespace Graphs_Framework
             int maxOrdinate = 0;
             switch (selectedChartType)
             {
-                case Chart.Types.Node: maxOrdinate = graphManager.Graph.NodeCount - 1; break;
-                case Chart.Types.Degree: maxOrdinate = graphManager.Graph.NodeCount; break;
-                case Chart.Types.AverageDegree: maxOrdinate = graphManager.Graph.NodeCount; break;
+                case Chart.Types.Degree: maxOrdinate = SelectedGraphManager.Graph.NodeCount - 1; break;
+                case Chart.Types.DegreeDistribution: maxOrdinate = SelectedGraphManager.Graph.NodeCount; break;
+                case Chart.Types.AverageDegreeDistribution: maxOrdinate = SelectedGraphManager.Graph.NodeCount; break;
             }
             return maxOrdinate;
         }
 
         private void DrawChart()
         {
-            if (graphManager.Graph == null) return;
-            if (graphManager.Graph.NeighbourMatrix == null) return;
-
             chartDrawerGraphics.Clear(Colors.background);
 
-            if (!Options.showChart)
+            if (SelectedGraphManager.Graph == null
+                || SelectedGraphManager.Graph.NeighbourMatrix == null
+                || !Options.showChart)
             {
                 UpdateChart();
                 return;
@@ -656,17 +564,17 @@ namespace Graphs_Framework
             SolidBrush brush = null;
             switch (selectedChartType)
             {
-                case Chart.Types.Node: brush = new SolidBrush(Colors.main); break;
-                case Chart.Types.Degree: brush = new SolidBrush(Colors.blue); break;
-                case Chart.Types.AverageDegree: brush = new SolidBrush(Colors.orange); break;
+                case Chart.Types.Degree: brush = new SolidBrush(Colors.main); break;
+                case Chart.Types.DegreeDistribution: brush = new SolidBrush(Colors.blue); break;
+                case Chart.Types.AverageDegreeDistribution: brush = new SolidBrush(Colors.orange); break;
             }
 
             int horizontalOffset = 0;
             switch (selectedChartType)
             {
-                case Chart.Types.Node: horizontalOffset = 0; break;
-                case Chart.Types.Degree: horizontalOffset = 0;  break;
-                case Chart.Types.AverageDegree: horizontalOffset = 10; break;
+                case Chart.Types.Degree: horizontalOffset = 0; break;
+                case Chart.Types.DegreeDistribution: horizontalOffset = 0;  break;
+                case Chart.Types.AverageDegreeDistribution: horizontalOffset = 10; break;
             }
 
             int startX = Options.showChartValues 
@@ -675,7 +583,7 @@ namespace Graphs_Framework
             int chartWidth = Options.showChartValues 
                 ? panelChart.Width - (CHART_VERTICAL_VALUES_WIDTH + horizontalOffset) 
                 : panelChart.Width;
-            int chartHeight = (Options.showChartValues && !Options.sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree)) 
+            int chartHeight = (Options.showChartValues && !Options.sortChart && (selectedChartType == Chart.Types.DegreeDistribution || selectedChartType == Chart.Types.AverageDegreeDistribution)) 
                 ? panelChart.Height - CHART_HORIZONTAL_VALUES_HEIGHT 
                 : panelChart.Height - 1;
 
@@ -705,7 +613,7 @@ namespace Graphs_Framework
 
                 chartDrawerGraphics.DrawString(tMeasuredValue, font, brush, 0, chartHeight - linePosY > 17 ? linePosY : linePosY - 17);
 
-                if (!Options.sortChart && (selectedChartType == Chart.Types.Degree || selectedChartType == Chart.Types.AverageDegree))
+                if (!Options.sortChart && (selectedChartType == Chart.Types.DegreeDistribution || selectedChartType == Chart.Types.AverageDegreeDistribution))
                 {
                     double textX = startX;
                     for (int i = 0; i < values.Count * 2 - 1; i++)
@@ -781,18 +689,18 @@ namespace Graphs_Framework
         private List<double> GetDegreeList()
         {
             List<double> degrees = new List<double>();
-            for (int i = 0; i < graphManager.Graph.NodeCount; i++)
-                degrees.Add(graphManager.Graph.CalculateDegree(i));
+            for (int i = 0; i < SelectedGraphManager.Graph.NodeCount; i++)
+                degrees.Add(SelectedGraphManager.Graph.CalculateDegree(i));
 
             return degrees;
         }
 
         private List<double> GetDegreeDistibution()
         {
-            List<double> degreeList = new List<double>(new double[graphManager.Graph.NodeCount]);
-            for (int i = 0; i < graphManager.Graph.NodeCount; i++)
+            List<double> degreeList = new List<double>(new double[SelectedGraphManager.Graph.NodeCount]);
+            for (int i = 0; i < SelectedGraphManager.Graph.NodeCount; i++)
             {
-                int degree = graphManager.Graph.CalculateDegree(i);
+                int degree = SelectedGraphManager.Graph.CalculateDegree(i);
                 degreeList[degree]++;
             }
 
@@ -801,7 +709,7 @@ namespace Graphs_Framework
 
         private List<double> GetAverageDegreeDistribution()
         {
-            return graphManager.AverageDegreeDistribution;
+            return SelectedGraphManager.AverageDegreeDistribution;
         }
 
         
@@ -885,6 +793,54 @@ namespace Graphs_Framework
             bGenerateSamples.BackColor = GetToggleButtonColor(Options.generateSamples);
         }
 
+        private void bAutoGenerateOnChange_Click(object sender, EventArgs e)
+        {
+            Options.autoGenerateOnChange = !Options.autoGenerateOnChange;
+            bAutoGenerateOnChange.BackColor = GetToggleButtonColor(Options.autoGenerateOnChange);
+        }
+
+        private void UpdateTabButtons()
+        {
+            bTabErdosRenyi.BackColor = Colors.background;
+            bTabBarabasiAlbert.BackColor = Colors.background;
+            bTabWattsStrogatz.BackColor = Colors.background;
+
+            //bTabErdosRenyi.ForeColor = Colors.blackText;
+            //bTabBarabasiAlbert.ForeColor = Colors.blackText;
+            //bTabWattsStrogatz.ForeColor = Colors.blackText;
+
+            bTabErdosRenyi.Enabled = true;
+            bTabBarabasiAlbert.Enabled = true;
+            bTabWattsStrogatz.Enabled = true;
+
+            if (Options.showGraph)
+            {
+                switch (selectedPage)
+                {
+                    case 0:
+                        bTabErdosRenyi.Enabled = false;
+                        bTabErdosRenyi.BackColor = Colors.foreground; 
+                        //bTabErdosRenyi.ForeColor = Colors.whiteText;
+                        break;
+                    case 1: 
+                        bTabBarabasiAlbert.Enabled = false;
+                        bTabBarabasiAlbert.BackColor = Colors.foreground; 
+                        //bTabBarabasiAlbert.ForeColor = Colors.whiteText;
+                        
+                        break;
+                    case 2:
+                        bTabWattsStrogatz.Enabled = false;
+                        bTabWattsStrogatz.BackColor = Colors.foreground; 
+                        //bTabWattsStrogatz.ForeColor = Colors.whiteText;
+                        break;
+                }
+            }
+
+            bTabErdosRenyi.Refresh();
+            bTabBarabasiAlbert.Refresh();
+            bTabWattsStrogatz.Refresh();
+        }
+
         private void UpdateChartButtons()
         {
             bChart1.BackColor = Colors.background;
@@ -895,9 +851,9 @@ namespace Graphs_Framework
             {
                 switch (selectedChartType)
                 {
-                    case Chart.Types.Node: bChart1.BackColor = Colors.main; break;
-                    case Chart.Types.Degree: bChart2.BackColor = Colors.blue; break;
-                    case Chart.Types.AverageDegree: bChart3.BackColor = Colors.orange; break;
+                    case Chart.Types.Degree: bChart1.BackColor = Colors.main; break;
+                    case Chart.Types.DegreeDistribution: bChart2.BackColor = Colors.blue; break;
+                    case Chart.Types.AverageDegreeDistribution: bChart3.BackColor = Colors.orange; break;
                 }
             }
 
@@ -906,22 +862,7 @@ namespace Graphs_Framework
             bChart3.Refresh();
         }
 
-        private void bChart1_Click(object sender, EventArgs e)
-        {
-            if (selectedChartType == Chart.Types.Node)
-            {
-                Options.showChart = !Options.showChart;
-            }
-            else
-            {
-                Options.showChart = true;
-            }
-            selectedChartType = Chart.Types.Node;
-            UpdateChartButtons();
-            DrawChart();
-        }
-
-        private void bChart2_Click(object sender, EventArgs e)
+        private void bChartDegrees_Click(object sender, EventArgs e)
         {
             if (selectedChartType == Chart.Types.Degree)
             {
@@ -936,9 +877,9 @@ namespace Graphs_Framework
             DrawChart();
         }
 
-        private void bChart3_Click(object sender, EventArgs e)
+        private void bChartDistribution_Click(object sender, EventArgs e)
         {
-            if (selectedChartType == Chart.Types.AverageDegree)
+            if (selectedChartType == Chart.Types.DegreeDistribution)
             {
                 Options.showChart = !Options.showChart;
             }
@@ -946,7 +887,22 @@ namespace Graphs_Framework
             {
                 Options.showChart = true;
             }
-            selectedChartType = Chart.Types.AverageDegree;
+            selectedChartType = Chart.Types.DegreeDistribution;
+            UpdateChartButtons();
+            DrawChart();
+        }
+
+        private void bChartAverageDistribution_Click(object sender, EventArgs e)
+        {
+            if (selectedChartType == Chart.Types.AverageDegreeDistribution)
+            {
+                Options.showChart = !Options.showChart;
+            }
+            else
+            {
+                Options.showChart = true;
+            }
+            selectedChartType = Chart.Types.AverageDegreeDistribution;
             UpdateChartButtons();
             DrawChart();
         }
@@ -956,7 +912,7 @@ namespace Graphs_Framework
             return value ? Colors.darkGrey : Colors.extrasBackground;
         }
 
-        private void Main_SizeChanged(object sender, EventArgs e)
+        private void Form_SizeChanged(object sender, EventArgs e)
         {
             if (WindowState != lastWindowState)
             {
@@ -983,7 +939,7 @@ namespace Graphs_Framework
             }
         }
 
-        private void Main_ResizeEnd(object sender, EventArgs e)
+        private void Form_ResizeEnd(object sender, EventArgs e)
         {
             SetupGraphics();
             DrawUI();
@@ -994,7 +950,7 @@ namespace Graphs_Framework
 
         }
 
-        private bool isInsideRect(Double2 position, Rectangle rectangle)
+        private bool IsInsideRect(Double2 position, Rectangle rectangle)
         {
             return rectangle.X <= position.X && position.X < rectangle.X + rectangle.Width
                 && rectangle.Y <= position.Y && position.Y < rectangle.Y + rectangle.Height;
@@ -1006,7 +962,7 @@ namespace Graphs_Framework
 
             for (int i = 0; i < chartColumnsHitboxes.Count; i++)
             {
-                if (isInsideRect(mouse, chartColumnsHitboxes[i])) return i;
+                if (IsInsideRect(mouse, chartColumnsHitboxes[i])) return i;
             }
 
             return -1;
@@ -1015,7 +971,6 @@ namespace Graphs_Framework
         private int GetSelectedNodeID(Double2 mouse)
         {
             if (scaledPoints == null || scaledPoints.Count == 0) return -1;
-            if (mouseButtonPressed == MouseButtons.Left) return selectedNodeID;
 
             double minDistance = scaledPoints[0].DistanceFrom(mouse);
             int id = 0;
@@ -1044,7 +999,11 @@ namespace Graphs_Framework
         {
             hoveredPanel = Panels.Graph;
             mousePosition = e.Location;
-            selectedNodeID = GetSelectedNodeID(e.Location);
+
+            if (mouseButtonPressed == MouseButtons.None)
+            {
+                selectedNodeID = GetSelectedNodeID(e.Location);
+            }
 
             if (DraggingNode())
             {
@@ -1078,7 +1037,10 @@ namespace Graphs_Framework
                     
                     break;
                 case MouseButtons.Right:
-                    
+                    if (selectedNodeID >= 0)
+                    {
+                        //selectedNodeOrigin = scaledPoints[selectedNodeID];
+                    }
                     break;
             }   
         }
@@ -1091,7 +1053,7 @@ namespace Graphs_Framework
                 case MouseButtons.Left:
                     if (selectedNodeID >= 0)
                     {
-                        graphManager.TranslateNode(selectedNodeID, (scaledPoints[selectedNodeID] - selectedNodeOrigin) * graphScaling);
+                        SelectedGraphManager.TranslateNode(selectedNodeID, (scaledPoints[selectedNodeID] - selectedNodeOrigin) * graphScaling);
                     }
                     break;
                 case MouseButtons.Middle:
@@ -1101,7 +1063,7 @@ namespace Graphs_Framework
                     if (selectedNodeID >= 0)
                     {
                         scaledPoints.RemoveAt(selectedNodeID);
-                        graphManager.RemoveNode(selectedNodeID);
+                        SelectedGraphManager.RemoveNode(selectedNodeID);
                         FillStatistics();
                         UpdateChart();
                         DrawGraphicalUI();
@@ -1147,10 +1109,16 @@ namespace Graphs_Framework
 
         private bool AutoDrawingIsOn() => Options.generateSamples || (Options.forceDirectedArrangement && !DraggingNode());
         private bool DraggingNode() => mouseButtonPressed == MouseButtons.Left && selectedNodeID >= 0;
+        private bool AddingEdge() => mouseButtonPressed == MouseButtons.Right && selectedNodeID >= 0;
+        private bool FreezeArrangement()
+        {
+            return DraggingNode()
+                || AddingEdge();
+        }
 
         private void bResetSamples_Click(object sender, EventArgs e)
         {
-            graphManager.ResetDistributionSamples();
+            SelectedGraphManager.ResetDistributionSamples();
             FillStatistics();
             DrawChart();
         }

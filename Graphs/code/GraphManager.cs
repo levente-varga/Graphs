@@ -3,33 +3,50 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms.VisualStyles;
 
-namespace Graphs_Framework
+namespace Graphs
 {
+    [SupportedOSPlatform("windows")]
     public class GraphManager 
     {
+        public GraphManager() 
+        { 
+            graph = new ErdosRenyiGraph();
+            graph.parameterChange += OnParameterChange;
+        }
+
+        public GraphManager(Graph other)
+        {
+            graph = other;
+            graph.parameterChange += OnParameterChange;
+        }
+
+        public delegate void OnParameterChangedEventHandler();
+        public event OnParameterChangedEventHandler parameterChanged;
+
         private const double IDEAL_SPRING_LENGTH = 10.0;
         double cooling = 1;
-        int arrangementStep = 1;
         
-        private Graph prevGeneratedGraph;
-        private Graph currGeneratedGraph;
+        private Graph previousGeneratedGraph;
+        private Graph currentGeneratedGraph;
+
         private Graph graph;
         public Graph Graph
         {
             get { return graph; }
         }
 
-        private List<Double2> points;
+        private List<Double2> points = new List<Double2>();
         public List<Double2> Points
         {
             get { return points; }
         }
 
-        private List<double> averageDegreeDistribution;
+        private List<double> averageDegreeDistribution = new List<double>();
         public List<double> AverageDegreeDistribution
         {
             get { return new List<double>(averageDegreeDistribution); }
@@ -41,44 +58,26 @@ namespace Graphs_Framework
             get { return sampleCount; }
         }
 
-
-        
-        public GraphManager() {
-            averageDegreeDistribution = new List<double>();
-            points = new List<Double2>();
-        }
-
         public void ResetDistributionSamples()
         {
             if (graph == null) return;
+
             averageDegreeDistribution = new List<double>(new double[graph.NodeCount]);
             sampleCount = 0;
         }
 
-        public void GenerateGraph(Graph.Types type, int nodes, double probability, double power)
+        public void GenerateGraph()
         {
-            prevGeneratedGraph = currGeneratedGraph;
-            graph = Graph.GenerateGraph(type, nodes, probability, power);
-            currGeneratedGraph = graph.Clone();
+            previousGeneratedGraph = currentGeneratedGraph?.Clone();
+            graph.Generate();
+            currentGeneratedGraph = graph.Clone();
 
-            if (GraphParametersChanged())
+            if (!currentGeneratedGraph.Equals(previousGeneratedGraph))
             {
                 ResetDistributionSamples();
             }
 
             UpdateAverageDegreeDistribution();
-        }
-
-        /*
-         * Compare the current and previous graph's generating parameters
-         */
-        private bool GraphParametersChanged()
-        {
-            if (prevGeneratedGraph == null) return true;
-            return currGeneratedGraph.NodeCount != prevGeneratedGraph.NodeCount
-                || currGeneratedGraph.Probability != prevGeneratedGraph.Probability
-                || currGeneratedGraph.Power != prevGeneratedGraph.Power
-                || currGeneratedGraph.Type != prevGeneratedGraph.Type;
         }
 
         private void UpdateAverageDegreeDistribution()
@@ -88,7 +87,7 @@ namespace Graphs_Framework
             sampleCount++;
             for (int i = 0; i < averageDegreeDistribution.Count; i++)
             {
-                averageDegreeDistribution[i] *= (double)(sampleCount - 1) / (double)sampleCount;
+                averageDegreeDistribution[i] *= (sampleCount - 1) / (double)sampleCount;
             }
             for (int i = 0; i < graph.NodeCount; i++)
             {
@@ -128,7 +127,6 @@ namespace Graphs_Framework
 
         public void ResetForceDirectedArrangement() 
         {
-            arrangementStep = 1;
             cooling = 1;
             ArrangeInCircle(1);
         }
@@ -178,19 +176,18 @@ namespace Graphs_Framework
             }
 
             cooling *= coolingFactor;
-            arrangementStep++;
         }
 
 
-        public void TranslateNode(int i, Double2 t)
+        public void TranslateNode(int node, Double2 translate)
         {
-            points[i] += t;
+            points[node] += translate;
         }
 
-        public void RemoveNode(int i)
+        public void RemoveNode(int node)
         {
-            points.RemoveAt(i);
-            graph.RemoveNode(i);
+            points.RemoveAt(node);
+            graph.RemoveNode(node);
         }
 
         public void RemoveEdge(int node1, int node2)
@@ -198,10 +195,23 @@ namespace Graphs_Framework
             graph.RemoveEdge(node1, node2);
         }
 
+        public void AddEdge(int node1, int node2)
+        {
+            graph.AddEdge(node1, node2);
+        }
+
         public void AddNode(Double2 at)
         {
             points.Add(at);
             graph.AddNode();
+        }
+
+        private void OnParameterChange()
+        {
+            if (Options.autoGenerateOnChange)
+            {
+                parameterChanged();
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ using System.Windows.Forms;
  * https://learn.microsoft.com/en-us/answers/questions/660546/change-the-thumb-colour-of-a-trackbar-in-winforms
  */
 
-namespace Graphs_Framework
+namespace Graphs
 {
     public class ColoredTrackBar : TrackBar
     {

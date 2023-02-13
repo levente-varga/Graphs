@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Graphs_Framework.Properties {
+namespace Graphs.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

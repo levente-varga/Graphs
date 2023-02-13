@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Graphs_Framework
+namespace Graphs
 {
     public static class Options
     {
@@ -17,6 +17,8 @@ namespace Graphs_Framework
         public static bool forceDirectedArrangement = false;
         public static bool pauseForceDirectedArrangement = false;
         public static bool showChart = true;
+        public static bool showGraph = true;
         public static bool generateSamples = false;
+        public static bool autoGenerateOnChange = false;
     }
 }

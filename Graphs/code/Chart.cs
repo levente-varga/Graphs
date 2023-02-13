@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Graphs_Framework {
+namespace Graphs {
     public class Chart 
     {
         public enum Types {
-            Node,
             Degree,
-            AverageDegree,
+            DegreeDistribution,
+            AverageDegreeDistribution,
         }
     }
 }

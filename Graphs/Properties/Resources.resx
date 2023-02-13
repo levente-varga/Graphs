@@ -136,11 +136,14 @@
   <data name="play" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\play.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="show_degrees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\show_degrees.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="reset_samples" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\reset_samples.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="sort_chart" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\sort_chart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="show_degrees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\show_degrees.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="arrange" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\arrange.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -157,7 +160,7 @@
   <data name="show_nodes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\show_nodes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="reset_samples" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\reset_samples.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="auto_generate_on_change" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\auto_generate_on_change.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
