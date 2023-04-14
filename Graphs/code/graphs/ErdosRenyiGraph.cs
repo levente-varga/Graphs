@@ -33,7 +33,7 @@ namespace Graphs
 
         ParameterEditor probabilityEditor;
         protected double probability = 0;
-        public double Probability { get { return probability; } }
+        public double Probability { get => probability; }
 
         public override void Generate()
         {
@@ -74,7 +74,7 @@ namespace Graphs
         public override void AddParameterEditorsToControl(Control control, Point position)
         {
             base.AddParameterEditorsToControl(control, position);
-            probabilityEditor.AddToControl(control, position + new Size(0, 40));
+            probabilityEditor.AddToControl(control, position + new Size(0, 41));
         }
 
         public override void RemoveParameterEditorsFromControl(Control control)
@@ -86,14 +86,15 @@ namespace Graphs
         public override string ToString()
         {
             return 
-                $"ErdosRenyiGraph[\n" +
-                $"Nodes: {nodeCount}, \n" +
-                $"Edges: {edgeCount}, \n" +
-                $"Matrix: {neighbourMatrix.Count}x{(NeighbourMatrix.Count == 0 ? "?" : NeighbourMatrix[0].Count.ToString())}, \n" +
-                $"Parameters: {{\n" +
-                    $"Nodes: {nodeCountEditor.SavedValue}, \n" +
-                    $"Probability: {probabilityEditor.SavedValue}\n" +
-                $"}}]\n";
+                $"ErdosRenyiGraph: {{\n" +
+                $"\tNodes: {nodeCount}, \n" +
+                $"\tEdges: {edgeCount}, \n" +
+                $"\tMatrix: {neighbourMatrix.Count}x{(NeighbourMatrix.Count == 0 ? "?" : NeighbourMatrix[0].Count.ToString())}, \n" +
+                $"\tParameters: {{\n" +
+                    $"\t\tNodes: {nodeCountEditor.SavedValue}, \n" +
+                    $"\t\tProbability: {probabilityEditor.SavedValue}\n" +
+                $"\t}}\n" +
+                $"}}\n";
         }
 
         protected override void OnParameterChanged()

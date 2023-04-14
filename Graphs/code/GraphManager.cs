@@ -15,7 +15,6 @@ namespace Graphs
     {
         public GraphManager() 
         { 
-            graph = new ErdosRenyiGraph();
             graph.parameterChange += OnParameterChange;
         }
 
@@ -37,25 +36,25 @@ namespace Graphs
         private Graph graph;
         public Graph Graph
         {
-            get { return graph; }
+            get => graph;
         }
 
         private List<Double2> points = new List<Double2>();
         public List<Double2> Points
         {
-            get { return points; }
+            get => points;
         }
 
         private List<double> averageDegreeDistribution = new List<double>();
         public List<double> AverageDegreeDistribution
         {
-            get { return new List<double>(averageDegreeDistribution); }
+            get => new List<double>(averageDegreeDistribution);
         }
 
         private int sampleCount = 0;
-        public int AverageSamples
+        public int SampleCount
         {
-            get { return sampleCount; }
+            get => sampleCount;
         }
 
         public void ResetDistributionSamples()
@@ -138,7 +137,8 @@ namespace Graphs
             if (graph == null) return;
 
             double maxForce = 0;
-            double coolingFactor = 1;
+            const double coolingFactor = 1;
+            const double power = 1.5;
             List<Double2> forces = new List<Double2>();
 
             for (int i = 0; i < graph.NodeCount; i++) forces.Add(new Double2());
@@ -152,12 +152,12 @@ namespace Graphs
                     Double2 awayFromOther = points[other].DirectionTowards(points[node]);
                     double distance = points[node].DistanceFrom(points[other]);
 
-                    Double2 repulsiveForce = IDEAL_SPRING_LENGTH / Math.Pow(distance, 1.5) * awayFromOther;
+                    Double2 repulsiveForce = IDEAL_SPRING_LENGTH / Math.Pow(distance, power) * awayFromOther;
                     Double2 attractiveForce = new Double2();
 
                     if (graph.HasEdge(node, other))
                     {
-                        attractiveForce = distance / Math.Pow(IDEAL_SPRING_LENGTH, 1.5) * towardsOther;
+                        attractiveForce = distance / Math.Pow(IDEAL_SPRING_LENGTH, power) * towardsOther;
                     }
 
                     Double2 totalForce = repulsiveForce + attractiveForce;

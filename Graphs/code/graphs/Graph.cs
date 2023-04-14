@@ -12,23 +12,23 @@ namespace Graphs
     [SupportedOSPlatform("windows")]
     public abstract class Graph
     {
-        protected List<List<bool>> neighbourMatrix;
+        protected List<List<bool>> neighbourMatrix = new List<List<bool>>();
         public List<List<bool>> NeighbourMatrix
         {
             get { return neighbourMatrix; }
         }
 
         protected string name = "Graph";
-        public string Name { get { return name; } }
+        public string Name { get => name; }
 
         protected int nodeCount = 0;
-        public int NodeCount { get { return nodeCount; } }
+        public int NodeCount { get => nodeCount; }
 
         protected int maxDegree = 0;
-        public int MaxDegree { get { return maxDegree; } }
+        public int MaxDegree { get => maxDegree; }
 
         protected int edgeCount = 0;
-        public int EdgeCount { get { return edgeCount; } }
+        public int EdgeCount { get => edgeCount; }
 
         protected ParameterEditor nodeCountEditor;
 
@@ -96,6 +96,8 @@ namespace Graphs
 
         public double CalculateAverageDegree()
         {
+            if (nodeCount == 0) return 0;
+
             int totalDegree = 0;
             for (int i = 0; i < nodeCount; i++)
             {
@@ -130,6 +132,7 @@ namespace Graphs
         public void AddEdge(int node1, int node2)
         {
             if (node1 == node2) return;
+            if (node1 >= nodeCount || node2 >= nodeCount) return;
             if (neighbourMatrix[node1][node2] || neighbourMatrix[node2][node1]) return;
 
             neighbourMatrix[node1][node2] = true;
@@ -160,7 +163,7 @@ namespace Graphs
                 neighbourMatrix[i].Add(false);
             }
             nodeCount++;
-            neighbourMatrix.Add(new List<bool>(nodeCount));
+            neighbourMatrix.Add(new List<bool>(new bool[nodeCount]));
         }
 
         public void RemoveNode(int node)
@@ -180,13 +183,14 @@ namespace Graphs
         public override string ToString()
         {
             return 
-                $"Graph[\n" +
-                $"Nodes: {nodeCount}, \n" +
-                $"Edges: {edgeCount}, \n" +
-                $"Matrix: {neighbourMatrix.Count}x{(NeighbourMatrix.Count == 0 ? "?" : NeighbourMatrix[0].Count.ToString())}, \n" +
-                $"Parameters: {{\n" +
-                    $"Nodes: {nodeCountEditor.SavedValue}\n" +
-                $"}}]\n";
+                $"Graph: {{\n" +
+                $"\tNodes: {nodeCount}, \n" +
+                $"\tEdges: {edgeCount}, \n" +
+                $"\tMatrix: {neighbourMatrix.Count}x{(NeighbourMatrix.Count == 0 ? "?" : NeighbourMatrix[0].Count.ToString())}, \n" +
+                $"\tParameters: {{\n" +
+                    $"\t\tNodes: {nodeCountEditor.SavedValue}\n" +
+                $"\t}}\n" +
+                $"}}\n";
         }
 
         public abstract void Generate();

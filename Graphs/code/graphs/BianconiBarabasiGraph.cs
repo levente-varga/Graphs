@@ -10,13 +10,13 @@ using System.Windows.Forms;
 namespace Graphs
 {
     [SupportedOSPlatform("windows")]
-    public class BarabasiAlbertGraph : Graph
+    public class BianconiBarabasiGraph : Graph
     {
-        public BarabasiAlbertGraph() : base()
+        public BianconiBarabasiGraph() : base()
         {
-            name = "Barabasi-Albert graph"; 
+            name = "Barabasi-Albert graph";
             powerEditor = new ParameterEditor(
-                name: "Power",
+                name: "Fitness",
                 minimumValue: 0,
                 maximumValue: 10,
                 initialValue: 1,
@@ -25,7 +25,7 @@ namespace Graphs
                 );
             powerEditor.valueChanged += (value) => { OnParameterChanged(); };
         }
-        public BarabasiAlbertGraph(BarabasiAlbertGraph other) : base(other)
+        public BianconiBarabasiGraph(BianconiBarabasiGraph other) : base(other)
         {
             powerEditor = new ParameterEditor(other.powerEditor);
             power = other.power;
@@ -33,7 +33,7 @@ namespace Graphs
 
         ParameterEditor powerEditor;
         protected double power = 0;
-        public double Power { get => power; }
+        public double Power { get { return power; } }
 
         public override void Generate()
         {
@@ -71,18 +71,18 @@ namespace Graphs
 
         public override Graph Clone()
         {
-            return new BarabasiAlbertGraph(this);
+            return new BianconiBarabasiGraph(this);
         }
 
         public override bool Equals(Graph other)
         {
             return other != null
                 && GetType() == other.GetType()
-                && powerEditor.SavedValue == ((BarabasiAlbertGraph)other).powerEditor.SavedValue
+                && powerEditor.SavedValue == ((BianconiBarabasiGraph)other).powerEditor.SavedValue
                 && base.Equals(other);
         }
 
-        public override Color Theme() => Colors.green;
+        public override Color Theme() => Colors.purple;
 
         public override void AddParameterEditorsToControl(Control control, Point position)
         {
@@ -98,8 +98,8 @@ namespace Graphs
 
         public override string ToString()
         {
-            return 
-                $"ErdosRenyiGraph: {{\n" +
+            return
+                $"BianconiBarabasiGraph: {{\n" +
                 $"\tNodes: {nodeCount}, \n" +
                 $"\tEdges: {edgeCount}, \n" +
                 $"\tMatrix: {neighbourMatrix.Count}x{(NeighbourMatrix.Count == 0 ? "?" : NeighbourMatrix[0].Count.ToString())}, \n" +

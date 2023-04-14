@@ -19,6 +19,13 @@ namespace Graphs
         public static bool showChart = true;
         public static bool showGraph = true;
         public static bool generateSamples = false;
-        public static bool autoGenerateOnChange = false;
+        public static bool autoGenerateOnChange = true;
+        public static GraphDisplayMode graphDisplayMode = GraphDisplayMode.Graph; 
+
+        public enum GraphDisplayMode
+        {
+            Graph,
+            Matrix,
+        }
     }
 }

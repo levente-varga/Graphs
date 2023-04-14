@@ -31,8 +31,8 @@ namespace Graphs
         {
             this.components = new System.ComponentModel.Container();
             this.panelChart = new System.Windows.Forms.Panel();
-            this.bChart1 = new System.Windows.Forms.Button();
-            this.bChart2 = new System.Windows.Forms.Button();
+            this.bChartDegrees = new System.Windows.Forms.Button();
+            this.bChartDegreeDistribution = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
             this.bResetSamples = new System.Windows.Forms.Button();
             this.lAverageDegreeSamples = new System.Windows.Forms.Label();
@@ -61,10 +61,11 @@ namespace Graphs
             this.bShowDegree = new System.Windows.Forms.Button();
             this.pProgressBar = new System.Windows.Forms.Panel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.bTabBianconiBarabasi = new System.Windows.Forms.Button();
             this.bTabWattsStrogatz = new System.Windows.Forms.Button();
             this.bTabBarabasiAlbert = new System.Windows.Forms.Button();
             this.bTabErdosRenyi = new System.Windows.Forms.Button();
-            this.bChart3 = new System.Windows.Forms.Button();
+            this.bChartAverageDegreeDistribution = new System.Windows.Forms.Button();
             this.panelGraph = new DoubleBufferedPanel();
             this.lVersion = new System.Windows.Forms.Label();
             this.timer = new System.Windows.Forms.Timer(this.components);
@@ -92,35 +93,35 @@ namespace Graphs
             this.panelChart.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelChart_MouseMove);
             this.panelChart.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelChart_MouseUp);
             // 
-            // bChart1
+            // bChartDegrees
             // 
-            this.bChart1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(189)))), ((int)(((byte)(0)))));
-            this.bChart1.FlatAppearance.BorderSize = 0;
-            this.bChart1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bChart1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.bChart1.Location = new System.Drawing.Point(30, 660);
-            this.bChart1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.bChart1.Name = "bChart1";
-            this.bChart1.Size = new System.Drawing.Size(72, 30);
-            this.bChart1.TabIndex = 14;
-            this.bChart1.Text = "Degrees";
-            this.bChart1.UseVisualStyleBackColor = false;
-            this.bChart1.Click += new System.EventHandler(this.bChartDegrees_Click);
+            this.bChartDegrees.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(189)))), ((int)(((byte)(0)))));
+            this.bChartDegrees.FlatAppearance.BorderSize = 0;
+            this.bChartDegrees.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bChartDegrees.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.bChartDegrees.Location = new System.Drawing.Point(30, 660);
+            this.bChartDegrees.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.bChartDegrees.Name = "bChartDegrees";
+            this.bChartDegrees.Size = new System.Drawing.Size(72, 30);
+            this.bChartDegrees.TabIndex = 14;
+            this.bChartDegrees.Text = "Degrees";
+            this.bChartDegrees.UseVisualStyleBackColor = false;
+            this.bChartDegrees.Click += new System.EventHandler(this.bChartDegrees_Click);
             // 
-            // bChart2
+            // bChartDegreeDistribution
             // 
-            this.bChart2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
-            this.bChart2.FlatAppearance.BorderSize = 0;
-            this.bChart2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bChart2.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.bChart2.Location = new System.Drawing.Point(108, 660);
-            this.bChart2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.bChart2.Name = "bChart2";
-            this.bChart2.Size = new System.Drawing.Size(147, 30);
-            this.bChart2.TabIndex = 15;
-            this.bChart2.Text = "Degree distribution";
-            this.bChart2.UseVisualStyleBackColor = false;
-            this.bChart2.Click += new System.EventHandler(this.bChartDistribution_Click);
+            this.bChartDegreeDistribution.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.bChartDegreeDistribution.FlatAppearance.BorderSize = 0;
+            this.bChartDegreeDistribution.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bChartDegreeDistribution.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.bChartDegreeDistribution.Location = new System.Drawing.Point(108, 660);
+            this.bChartDegreeDistribution.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.bChartDegreeDistribution.Name = "bChartDegreeDistribution";
+            this.bChartDegreeDistribution.Size = new System.Drawing.Size(147, 30);
+            this.bChartDegreeDistribution.TabIndex = 15;
+            this.bChartDegreeDistribution.Text = "Degree distribution";
+            this.bChartDegreeDistribution.UseVisualStyleBackColor = false;
+            this.bChartDegreeDistribution.Click += new System.EventHandler(this.bChartDegreeDistribution_Click);
             // 
             // panel2
             // 
@@ -153,7 +154,7 @@ namespace Graphs
             this.bResetSamples.Name = "bResetSamples";
             this.bResetSamples.Size = new System.Drawing.Size(25, 25);
             this.bResetSamples.TabIndex = 38;
-            this.toolTip1.SetToolTip(this.bResetSamples, "Reset distribution samples");
+            this.toolTip1.SetToolTip(this.bResetSamples, "Delete distribution samples");
             this.bResetSamples.UseVisualStyleBackColor = false;
             this.bResetSamples.Click += new System.EventHandler(this.bResetSamples_Click);
             // 
@@ -161,10 +162,10 @@ namespace Graphs
             // 
             this.lAverageDegreeSamples.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lAverageDegreeSamples.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.lAverageDegreeSamples.Location = new System.Drawing.Point(427, 0);
+            this.lAverageDegreeSamples.Location = new System.Drawing.Point(432, 0);
             this.lAverageDegreeSamples.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lAverageDegreeSamples.Name = "lAverageDegreeSamples";
-            this.lAverageDegreeSamples.Size = new System.Drawing.Size(45, 50);
+            this.lAverageDegreeSamples.Size = new System.Drawing.Size(40, 50);
             this.lAverageDegreeSamples.TabIndex = 5;
             this.lAverageDegreeSamples.Text = "-";
             this.lAverageDegreeSamples.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -173,7 +174,7 @@ namespace Graphs
             // 
             this.label9.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label9.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.label9.Location = new System.Drawing.Point(303, 0);
+            this.label9.Location = new System.Drawing.Point(310, 0);
             this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(122, 50);
@@ -185,7 +186,7 @@ namespace Graphs
             // 
             this.lAverageDegreeValue.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lAverageDegreeValue.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.lAverageDegreeValue.Location = new System.Drawing.Point(262, 0);
+            this.lAverageDegreeValue.Location = new System.Drawing.Point(275, 0);
             this.lAverageDegreeValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lAverageDegreeValue.Name = "lAverageDegreeValue";
             this.lAverageDegreeValue.Size = new System.Drawing.Size(35, 50);
@@ -197,10 +198,10 @@ namespace Graphs
             // 
             this.label8.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label8.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.label8.Location = new System.Drawing.Point(154, 0);
+            this.label8.Location = new System.Drawing.Point(181, 0);
             this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(106, 50);
+            this.label8.Size = new System.Drawing.Size(95, 50);
             this.label8.TabIndex = 2;
             this.label8.Text = "Average degree:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -209,10 +210,10 @@ namespace Graphs
             // 
             this.lEdgeCount.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lEdgeCount.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.lEdgeCount.Location = new System.Drawing.Point(67, 0);
+            this.lEdgeCount.Location = new System.Drawing.Point(65, 0);
             this.lEdgeCount.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lEdgeCount.Name = "lEdgeCount";
-            this.lEdgeCount.Size = new System.Drawing.Size(81, 50);
+            this.lEdgeCount.Size = new System.Drawing.Size(113, 50);
             this.lEdgeCount.TabIndex = 1;
             this.lEdgeCount.Text = "-";
             this.lEdgeCount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -493,7 +494,7 @@ namespace Graphs
             this.bSort.Name = "bSort";
             this.bSort.Size = new System.Drawing.Size(25, 25);
             this.bSort.TabIndex = 31;
-            this.toolTip1.SetToolTip(this.bSort, "Sort chart is descending order");
+            this.toolTip1.SetToolTip(this.bSort, "Sort chart in descending order");
             this.bSort.UseVisualStyleBackColor = false;
             this.bSort.Click += new System.EventHandler(this.bSort_Click);
             // 
@@ -535,16 +536,17 @@ namespace Graphs
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.bTabBianconiBarabasi);
             this.splitContainer1.Panel1.Controls.Add(this.bTabWattsStrogatz);
             this.splitContainer1.Panel1.Controls.Add(this.bTabBarabasiAlbert);
             this.splitContainer1.Panel1.Controls.Add(this.bTabErdosRenyi);
             this.splitContainer1.Panel1.Controls.Add(this.panel5);
             this.splitContainer1.Panel1.Controls.Add(this.panel2);
-            this.splitContainer1.Panel1.Controls.Add(this.bChart3);
+            this.splitContainer1.Panel1.Controls.Add(this.bChartAverageDegreeDistribution);
             this.splitContainer1.Panel1.Controls.Add(this.pProgressBar);
-            this.splitContainer1.Panel1.Controls.Add(this.bChart2);
+            this.splitContainer1.Panel1.Controls.Add(this.bChartDegreeDistribution);
             this.splitContainer1.Panel1.Controls.Add(this.panelChart);
-            this.splitContainer1.Panel1.Controls.Add(this.bChart1);
+            this.splitContainer1.Panel1.Controls.Add(this.bChartDegrees);
             this.splitContainer1.Panel1.Controls.Add(this.panelParameters);
             // 
             // splitContainer1.Panel2
@@ -557,6 +559,21 @@ namespace Graphs
             this.splitContainer1.SplitterDistance = 560;
             this.splitContainer1.SplitterWidth = 1;
             this.splitContainer1.TabIndex = 21;
+            // 
+            // bTabBianconiBarabasi
+            // 
+            this.bTabBianconiBarabasi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.bTabBianconiBarabasi.FlatAppearance.BorderSize = 0;
+            this.bTabBianconiBarabasi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bTabBianconiBarabasi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.bTabBianconiBarabasi.Location = new System.Drawing.Point(225, 30);
+            this.bTabBianconiBarabasi.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.bTabBianconiBarabasi.Name = "bTabBianconiBarabasi";
+            this.bTabBianconiBarabasi.Size = new System.Drawing.Size(60, 30);
+            this.bTabBianconiBarabasi.TabIndex = 37;
+            this.bTabBianconiBarabasi.Text = "BB";
+            this.bTabBianconiBarabasi.UseVisualStyleBackColor = false;
+            this.bTabBianconiBarabasi.Click += new System.EventHandler(this.buttonTabBianconiBarabasi_Click);
             // 
             // bTabWattsStrogatz
             // 
@@ -604,20 +621,20 @@ namespace Graphs
             this.bTabErdosRenyi.UseVisualStyleBackColor = false;
             this.bTabErdosRenyi.Click += new System.EventHandler(this.buttonTabErdosRenyi_Click);
             // 
-            // bChart3
+            // bChartAverageDegreeDistribution
             // 
-            this.bChart3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
-            this.bChart3.FlatAppearance.BorderSize = 0;
-            this.bChart3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bChart3.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.bChart3.Location = new System.Drawing.Point(261, 660);
-            this.bChart3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.bChart3.Name = "bChart3";
-            this.bChart3.Size = new System.Drawing.Size(207, 30);
-            this.bChart3.TabIndex = 21;
-            this.bChart3.Text = "Average degree distribution";
-            this.bChart3.UseVisualStyleBackColor = false;
-            this.bChart3.Click += new System.EventHandler(this.bChartAverageDistribution_Click);
+            this.bChartAverageDegreeDistribution.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.bChartAverageDegreeDistribution.FlatAppearance.BorderSize = 0;
+            this.bChartAverageDegreeDistribution.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bChartAverageDegreeDistribution.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.bChartAverageDegreeDistribution.Location = new System.Drawing.Point(261, 660);
+            this.bChartAverageDegreeDistribution.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.bChartAverageDegreeDistribution.Name = "bChartAverageDegreeDistribution";
+            this.bChartAverageDegreeDistribution.Size = new System.Drawing.Size(207, 30);
+            this.bChartAverageDegreeDistribution.TabIndex = 21;
+            this.bChartAverageDegreeDistribution.Text = "Average degree distribution";
+            this.bChartAverageDegreeDistribution.UseVisualStyleBackColor = false;
+            this.bChartAverageDegreeDistribution.Click += new System.EventHandler(this.bChartAverageDegreeDistribution_Click);
             // 
             // panelGraph
             // 
@@ -627,7 +644,7 @@ namespace Graphs
             this.panelGraph.Location = new System.Drawing.Point(30, 30);
             this.panelGraph.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.panelGraph.Name = "panelGraph";
-            this.panelGraph.Size = new System.Drawing.Size(660, 660);
+            this.panelGraph.Size = new System.Drawing.Size(669, 660);
             this.panelGraph.TabIndex = 11;
             this.panelGraph.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelGraph_MouseDown);
             this.panelGraph.MouseEnter += new System.EventHandler(this.panelGraph_MouseEnter);
@@ -640,7 +657,7 @@ namespace Graphs
             this.lVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lVersion.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.lVersion.Location = new System.Drawing.Point(619, 700);
+            this.lVersion.Location = new System.Drawing.Point(628, 700);
             this.lVersion.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lVersion.Name = "lVersion";
             this.lVersion.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
@@ -650,7 +667,7 @@ namespace Graphs
             // 
             // timer
             // 
-            this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            this.timer.Tick += new System.EventHandler(this.Update);
             // 
             // FormMain
             // 
@@ -680,8 +697,8 @@ namespace Graphs
 
         #endregion
         private System.Windows.Forms.Panel panelChart;
-        private System.Windows.Forms.Button bChart1;
-        private System.Windows.Forms.Button bChart2;
+        private System.Windows.Forms.Button bChartDegrees;
+        private System.Windows.Forms.Button bChartDegreeDistribution;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label lAverageDegreeValue;
         private System.Windows.Forms.Label label8;
@@ -690,7 +707,7 @@ namespace Graphs
         private System.Windows.Forms.Panel panelParameters;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Label lVersion;
-        private System.Windows.Forms.Button bChart3;
+        private System.Windows.Forms.Button bChartAverageDegreeDistribution;
         private System.Windows.Forms.Label lAverageDegreeSamples;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label lMaxF;
@@ -718,6 +735,7 @@ namespace Graphs
         private System.Windows.Forms.Button bTabWattsStrogatz;
         private System.Windows.Forms.Button bTabBarabasiAlbert;
         private System.Windows.Forms.Button bAutoGenerateOnChange;
+        private System.Windows.Forms.Button bTabBianconiBarabasi;
     }
 }
 

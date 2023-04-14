@@ -8,7 +8,7 @@ namespace Graphs {
     public class Chart 
     {
         public enum Types {
-            Degree,
+            Degrees,
             DegreeDistribution,
             AverageDegreeDistribution,
         }

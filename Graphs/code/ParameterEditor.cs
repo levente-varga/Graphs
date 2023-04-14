@@ -32,8 +32,7 @@ namespace Graphs
             InitialValue = Math.Max(Math.Min(Scale(initialValue), MaximumValue), MinimumValue);
             ValueStep = Math.Max(Math.Abs(Scale(valueStep)), 1);
 
-            SetupTrackBar();
-            SetupLabelValue();
+            SetupControls();
         }
 
         public ParameterEditor(ParameterEditor other)
@@ -46,7 +45,13 @@ namespace Graphs
             ValueStep = other.ValueStep;
             SavedValue = other.SavedValue;
 
+            SetupControls();
+        }
+
+        private void SetupControls()
+        {
             SetupTrackBar();
+            SetupLabelName();
             SetupLabelValue();
         }
 
@@ -66,7 +71,7 @@ namespace Graphs
                 return Value; 
             } 
         }
-        private double Value { get { return UnScale(valueOfTrackBar()); } }
+        private double Value { get => UnScale(valueOfTrackBar()); }
         public int MinimumValue { get; }
         public int MaximumValue { get; }
         public int InitialValue { get; }
@@ -88,8 +93,8 @@ namespace Graphs
             trackBar.Margin = new Padding(0);
             trackBar.Name = "trackBarMeanDegree";
             trackBar.AutoSize = false;
-            trackBar.Size = new Size(240, 20);
-            trackBar.TabIndex = 30;
+            trackBar.Size = new Size(205, 22);
+            trackBar.TabStop = false;
             trackBar.TickStyle = TickStyle.None;
             trackBar.Scroll += new EventHandler(TrackBarScroll);
             ((System.ComponentModel.ISupportInitialize)(trackBar)).EndInit();
@@ -103,20 +108,38 @@ namespace Graphs
 
         private void SetupLabelValue()
         {
-            labelValue.BackColor = Color.FromArgb(50, 50, 50);
+            labelValue.BackColor = Colors.darkGrey;
+            labelValue.ForeColor = Colors.fontWhite;
             labelValue.BorderStyle = BorderStyle.None;
             labelValue.CausesValidation = false;
             labelValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
-            labelValue.ForeColor = Color.White;
             labelValue.Location = new Point(0, 0);
             labelValue.Margin = new Padding(0);
             labelValue.Name = "labelValue";
-            labelValue.Size = new Size(35, 20);
-            labelValue.TabIndex = 5;
+            labelValue.Size = new Size(35, 18);
+            labelValue.TabStop = false;
             labelValue.Text = Value.ToString($"F{ValueResolution}");
             labelValue.TextAlign = HorizontalAlignment.Center;
             //this.toolTip1.SetToolTip(labelValue, "Probability of two nodes being connected with an edge");
             labelValue.KeyDown += new KeyEventHandler(labelValueKeyDown);
+        }
+
+        private void SetupLabelName()
+        {
+            labelName.BackColor = Colors.foregroundDark;
+            labelName.ForeColor = Colors.fontWhite;
+            labelName.BorderStyle = BorderStyle.None;
+            labelName.CausesValidation = false;
+            labelName.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point);
+            labelName.Location = new Point(0, 0);
+            labelName.Margin = new Padding(0);
+            labelName.Padding = new Padding(2, 0, 2, 1);
+            labelName.Name = "labelName";
+            labelName.Size = new Size(90, 18);
+            //labelName.AutoSize = true;
+            labelName.TabStop = false;
+            labelName.Text = Name;
+            labelName.TextAlign = ContentAlignment.MiddleLeft;
         }
 
         private void HandleValueChange()
@@ -172,16 +195,20 @@ namespace Graphs
         public void AddToControl(Control control, Point position)
         {
             control.Controls.Add(labelValue);
+            control.Controls.Add(labelName);
             control.Controls.Add(trackBar);
-            labelValue.Location = position;
-            trackBar.Location = position + new Size(60, 0);
+            labelName.Location =  position + new Size(0, 0);
+            labelValue.Location = position + new Size(90, 0);
+            trackBar.Location =   position + new Size(145, -2);
             labelValue.Update();
+            labelName.Update();
             trackBar.Update();
         }
 
         public void RemoveFromControl(Control control)
         {
             control.Controls.Remove(labelValue);
+            control.Controls.Remove(labelName);
             control.Controls.Remove(trackBar);
         }
     }
