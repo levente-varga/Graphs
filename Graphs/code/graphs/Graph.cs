@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.Versioning;
-using System.Threading;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 
 namespace Graphs
 {
@@ -35,11 +32,11 @@ namespace Graphs
         protected Random random = new Random();
 
         public delegate void OnParameterChangedEventHandler();
-        public event OnParameterChangedEventHandler parameterChange;
+        public event OnParameterChangedEventHandler OnParameterChange;
 
-        protected virtual void OnParameterChanged()
+        protected void OnParameterChanged()
         {
-            parameterChange?.Invoke();
+            OnParameterChange?.Invoke();
         }
 
         public Graph()
@@ -182,7 +179,7 @@ namespace Graphs
 
         public override string ToString()
         {
-            return 
+            return
                 $"Graph: {{\n" +
                 $"\tNodes: {nodeCount}, \n" +
                 $"\tEdges: {edgeCount}, \n" +

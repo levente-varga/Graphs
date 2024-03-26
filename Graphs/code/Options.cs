@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Graphs
+﻿namespace Graphs
 {
     public static class Options
     {
@@ -20,7 +14,7 @@ namespace Graphs
         public static bool showGraph = true;
         public static bool generateSamples = false;
         public static bool autoGenerateOnChange = true;
-        public static GraphDisplayMode graphDisplayMode = GraphDisplayMode.Graph; 
+        public static GraphDisplayMode graphDisplayMode = GraphDisplayMode.Graph;
 
         public enum GraphDisplayMode
         {

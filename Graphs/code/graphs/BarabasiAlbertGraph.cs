@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Graphs
@@ -12,9 +8,13 @@ namespace Graphs
     [SupportedOSPlatform("windows")]
     public class BarabasiAlbertGraph : Graph
     {
+        private ParameterEditor powerEditor;
+        private double power = 0;
+        public double Power { get => power; }
+
         public BarabasiAlbertGraph() : base()
         {
-            name = "Barabasi-Albert graph"; 
+            name = "Barabasi-Albert graph";
             powerEditor = new ParameterEditor(
                 name: "Power",
                 minimumValue: 0,
@@ -30,10 +30,6 @@ namespace Graphs
             powerEditor = new ParameterEditor(other.powerEditor);
             power = other.power;
         }
-
-        ParameterEditor powerEditor;
-        protected double power = 0;
-        public double Power { get => power; }
 
         public override void Generate()
         {
@@ -98,7 +94,7 @@ namespace Graphs
 
         public override string ToString()
         {
-            return 
+            return
                 $"ErdosRenyiGraph: {{\n" +
                 $"\tNodes: {nodeCount}, \n" +
                 $"\tEdges: {edgeCount}, \n" +
@@ -108,11 +104,6 @@ namespace Graphs
                     $"\t\tPower: {powerEditor.SavedValue}\n" +
                 $"\t}}\n" +
                 $"}}\n";
-        }
-
-        protected override void OnParameterChanged()
-        {
-            base.OnParameterChanged();
         }
     }
 }

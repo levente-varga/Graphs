@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Graphs {
-    public class Chart 
+﻿namespace Graphs
+{
+    public class Chart
     {
-        public enum Types {
+        public enum Types
+        {
             Degrees,
             DegreeDistribution,
             AverageDegreeDistribution,

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
+using System.Drawing.Drawing2D;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Graphs
@@ -64,12 +61,13 @@ namespace Graphs
         // The value that was used for the last generation of a graph
         public double SavedValue { get; private set; }
         public string Name { get; }
-        public double ValueAndSave {
-            get 
+        public double ValueAndSave
+        {
+            get
             {
                 SaveValue();
-                return Value; 
-            } 
+                return Value;
+            }
         }
         private double Value { get => UnScale(valueOfTrackBar()); }
         public int MinimumValue { get; }
@@ -126,6 +124,8 @@ namespace Graphs
 
         private void SetupLabelName()
         {
+            Size size = new Size(90, 18);
+
             labelName.BackColor = Colors.foregroundDark;
             labelName.ForeColor = Colors.fontWhite;
             labelName.BorderStyle = BorderStyle.None;
@@ -135,11 +135,32 @@ namespace Graphs
             labelName.Margin = new Padding(0);
             labelName.Padding = new Padding(2, 0, 2, 1);
             labelName.Name = "labelName";
-            labelName.Size = new Size(90, 18);
+            labelName.Size = size;
             //labelName.AutoSize = true;
             labelName.TabStop = false;
             labelName.Text = Name;
             labelName.TextAlign = ContentAlignment.MiddleLeft;
+            labelName.CreateGraphics();
+
+            labelName.Paint += (sender, e) =>
+            {
+                //return;
+                Debug.WriteLine("gradient");
+                LinearGradientBrush gradientBrush = new LinearGradientBrush(new Point(0), new Point(labelName.Size.Width, 0), Colors.foregroundDark, Colors.darkGrey);
+                Brush brush = new SolidBrush(labelName.ForeColor);
+
+                Blend blend = new Blend();
+                blend.Factors = new float[] { 0.0f, 0.0f, 1.0f };
+                blend.Positions = new float[] { 0.0f, 0.9f, 1.0f };
+                gradientBrush.Blend = blend;
+                e.Graphics.FillRectangle(gradientBrush, new Rectangle(new Point(0), labelName.Size));
+
+                e.Graphics.DrawString(labelName.Text, labelName.Font, brush, new Point(5, 2));
+
+                brush.Dispose();
+                gradientBrush.Dispose();
+            };
+
         }
 
         private void HandleValueChange()
@@ -197,9 +218,9 @@ namespace Graphs
             control.Controls.Add(labelValue);
             control.Controls.Add(labelName);
             control.Controls.Add(trackBar);
-            labelName.Location =  position + new Size(0, 0);
+            labelName.Location = position + new Size(0, 0);
             labelValue.Location = position + new Size(90, 0);
-            trackBar.Location =   position + new Size(145, -2);
+            trackBar.Location = position + new Size(145, -2);
             labelValue.Update();
             labelName.Update();
             trackBar.Update();

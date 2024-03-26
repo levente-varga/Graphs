@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Graphs
@@ -13,6 +8,14 @@ namespace Graphs
     [SupportedOSPlatform("windows")]
     public class WattsStrogatzGraph : Graph
     {
+        private ParameterEditor probabilityEditor;
+        private double probability = 0;
+        public double Probability { get => probability; }
+
+        private ParameterEditor meanDegreeEditor;
+        private int meanDegree = 0;
+        public int MeanDegree { get => meanDegree; }
+
         public WattsStrogatzGraph() : base()
         {
             name = "Watts-Strogatz graph";
@@ -42,14 +45,6 @@ namespace Graphs
             meanDegree = other.meanDegree;
             probability = other.probability;
         }
-
-        ParameterEditor probabilityEditor;
-        protected double probability = 0;
-        public double Probability { get => probability; }
-
-        ParameterEditor meanDegreeEditor;
-        protected int meanDegree = 0;
-        public int MeanDegree { get => meanDegree; }
 
         private void RewriteEdge(int node, int other)
         {
@@ -104,9 +99,9 @@ namespace Graphs
                 for (int turn = 1; turn <= meanDegree / 2; turn++)
                 {
                     int otherNode = (node + turn) % nodeCount;
-                    if (probability > random.NextDouble()) 
+                    if (probability > random.NextDouble())
                     {
-                         RewriteEdge(node, otherNode);
+                        RewriteEdge(node, otherNode);
                     }
                 }
             }
@@ -146,7 +141,7 @@ namespace Graphs
 
         public override string ToString()
         {
-            return 
+            return
                 $"ErdosRenyiGraph: {{\n" +
                 $"\tNodes: {nodeCount}, \n" +
                 $"\tEdges: {edgeCount}, \n" +
@@ -157,11 +152,6 @@ namespace Graphs
                     $"\t\tMeanDegree: {meanDegreeEditor.SavedValue}\n" +
                 $"\t}}\n" +
                 $"}}\n";
-        }
-
-        protected override void OnParameterChanged()
-        {
-            base.OnParameterChanged();
         }
     }
 }

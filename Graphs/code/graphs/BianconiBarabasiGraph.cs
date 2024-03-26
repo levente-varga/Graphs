@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Graphs
@@ -12,6 +8,10 @@ namespace Graphs
     [SupportedOSPlatform("windows")]
     public class BianconiBarabasiGraph : Graph
     {
+        private ParameterEditor powerEditor;
+        private double power = 0;
+        public double Power { get { return power; } }
+
         public BianconiBarabasiGraph() : base()
         {
             name = "Barabasi-Albert graph";
@@ -30,10 +30,6 @@ namespace Graphs
             powerEditor = new ParameterEditor(other.powerEditor);
             power = other.power;
         }
-
-        ParameterEditor powerEditor;
-        protected double power = 0;
-        public double Power { get { return power; } }
 
         public override void Generate()
         {
@@ -108,11 +104,6 @@ namespace Graphs
                     $"\t\tPower: {powerEditor.SavedValue}\n" +
                 $"\t}}\n" +
                 $"}}\n";
-        }
-
-        protected override void OnParameterChanged()
-        {
-            base.OnParameterChanged();
         }
     }
 }

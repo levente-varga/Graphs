@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Graphs
@@ -12,9 +8,13 @@ namespace Graphs
     [SupportedOSPlatform("windows")]
     public class ErdosRenyiGraph : Graph
     {
+        private ParameterEditor probabilityEditor;
+        private double probability = 0;
+        public double Probability { get => probability; }
+
         public ErdosRenyiGraph() : base()
         {
-            name = "Erdos-Renyi graph"; 
+            name = "Erdos-Renyi graph";
             probabilityEditor = new ParameterEditor(
                 name: "Probability",
                 minimumValue: 0,
@@ -30,10 +30,6 @@ namespace Graphs
             probabilityEditor = new ParameterEditor(other.probabilityEditor);
             probability = other.probability;
         }
-
-        ParameterEditor probabilityEditor;
-        protected double probability = 0;
-        public double Probability { get => probability; }
 
         public override void Generate()
         {
@@ -85,7 +81,7 @@ namespace Graphs
 
         public override string ToString()
         {
-            return 
+            return
                 $"ErdosRenyiGraph: {{\n" +
                 $"\tNodes: {nodeCount}, \n" +
                 $"\tEdges: {edgeCount}, \n" +
@@ -95,11 +91,6 @@ namespace Graphs
                     $"\t\tProbability: {probabilityEditor.SavedValue}\n" +
                 $"\t}}\n" +
                 $"}}\n";
-        }
-
-        protected override void OnParameterChanged()
-        {
-            base.OnParameterChanged();
         }
     }
 }

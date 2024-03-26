@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace Graphs
 {
     public class Double2
     {
-        double x;
-        double y;
+        private double x;
+        private double y;
 
         public double X
         {
