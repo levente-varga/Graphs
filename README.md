@@ -1,5 +1,7 @@
 # Graphs
 
+#### Made with Windows Forms using C# and .NET
+
 A graph visualizer and generator for educational purposes.
 
 
